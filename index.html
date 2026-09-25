@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<script>
+!(function(j,a,g){j.__itrace_conf = {bid: 'f43basl8-6nqu7l3w',rel: '0.0.1', spa: true, uid: '', plugins:['jserror','interface','perf','resource','flow','blank']};var b = a.createElement("script");var d = a.getElementsByTagName("script")[0];b.type = "text/javascript";b.crossorigin = true;b.async = true;b.onload = function(){j.__itrace && j.__itrace.setReady()};d.parentNode.insertBefore(b,d);b.src = g})(window, document, "https://g.alicdn.com/woodpeckerx/itrace-next/itrace.iife.js")
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>杏柒创游世界卖币工具</title>
+<style>
+/* SECTION: base */
+:root{
+  --bg:#12141f; --panel:#1c1f2e; --panel2:#232739; --line:#323750;
+  --gold:#f5b93c; --gold2:#ffe08a; --text:#eceef6; --sub:#9aa0b8;
+  --ok:#3ddc84; --warn:#f5b93c; --info:#5aa2ff; --bad:#ff6b6b;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  background:radial-gradient(1200px 500px at 50% -10%,#2a2f4d 0%,var(--bg) 60%);
+  color:var(--text); min-height:100%;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom));
+}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px}
+button{font-family:inherit}
+input,select,textarea{font-family:inherit;font-size:16px}
+/* SECTION: header */
+.header{text-align:center;padding:18px 0 14px;position:relative}
+.logo{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+}
+.coin-icon{width:40px;height:40px;flex:0 0 40px}
+.header h1{font-size:24px;letter-spacing:1px}
+.header h1 .hl{color:var(--gold)}
+.header p{color:var(--sub);font-size:13px;margin-top:6px}
+.demo-tag{
+  display:inline-block;margin-top:8px;padding:3px 10px;border-radius:999px;
+  background:rgba(245,185,60,.12);border:1px solid rgba(245,185,60,.4);
+  color:var(--gold2);font-size:12px;
+}
+.cloud-tag{
+  display:inline-block;margin-top:8px;margin-left:6px;padding:3px 10px;border-radius:999px;
+  font-size:12px;border:1px solid var(--line);color:var(--sub);background:var(--panel2);
+}
+.cloud-tag.online{border-color:rgba(61,220,132,.5);color:var(--ok);background:rgba(61,220,132,.1)}
+.cloud-tag.offline{border-color:rgba(255,107,107,.5);color:var(--bad);background:rgba(255,107,107,.1)}
+.admin-entry{
+  position:absolute;right:0;top:18px;min-height:36px;padding:6px 12px;
+  background:transparent;border:1px solid var(--line);border-radius:999px;
+  color:var(--sub);font-size:13px;cursor:pointer;
+}
+.admin-entry:hover{border-color:var(--gold);color:var(--gold2)}
+/* SECTION: tabs */
+.tabs{
+  display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:6px;margin:14px 0 18px;
+}
+.tab-btn{
+  flex:1;min-height:44px;border:0;border-radius:999px;background:transparent;
+  color:var(--sub);font-size:15px;font-weight:600;cursor:pointer;transition:.2s;
+  white-space:nowrap;
+}
+.tab-btn.active{background:linear-gradient(135deg,var(--gold),#e09b1f);color:#231a05;box-shadow:0 4px 14px rgba(245,185,60,.35)}
+.tab-btn[hidden]{display:none}
+.panel-view{display:none;animation:fade .25s ease}
+.panel-view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.panel-view{animation:none}}
+/* SECTION: card & form */
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px;margin-bottom:16px;
+}
+.card h2{font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.card h2::before{content:"";width:4px;height:16px;border-radius:2px;background:var(--gold)}
+.card .tip{color:var(--sub);font-size:13px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:13px;color:var(--sub)}
+.field label .req{color:var(--bad);margin-left:2px}
+.field input,.field select,.field textarea{
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  color:var(--text);padding:11px 12px;min-height:44px;outline:none;transition:border .15s;width:100%;
+}
+.field textarea{min-height:76px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
+.field .err-msg{color:var(--bad);font-size:12px;display:none}
+.field.invalid input,.field.invalid select{border-color:var(--bad)}
+.field.invalid .err-msg{display:block}
+/* SECTION: notice */
+.notice-card{
+  background:rgba(90,162,255,.08);border:1px solid rgba(90,162,255,.35);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;
+}
+.notice-card .n-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--info);margin-bottom:6px}
+.notice-item{padding:8px 0;border-top:1px dashed rgba(90,162,255,.25);font-size:13px}
+.notice-item:first-of-type{border-top:0}
+.notice-item .n-title{font-weight:600;color:var(--text)}
+.notice-item .n-content{color:var(--sub);margin-top:2px;white-space:pre-wrap;word-break:break-word}
+.notice-item .n-time{color:var(--sub);font-size:11px;margin-top:3px;opacity:.8}
+/* SECTION: unit-price */
+.price-hero{
+  display:flex;align-items:baseline;justify-content:center;gap:6px;
+  padding:14px 0 4px;
+}
+.price-hero .unit{font-size:40px;font-weight:800;color:var(--gold)}
+.price-hero .per{font-size:15px;color:var(--sub)}
+.qty-presets{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0 4px}
+.qty-chip{
+  min-height:40px;padding:8px 16px;border-radius:999px;cursor:pointer;font-size:14px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--sub);transition:.15s;
+}
+.qty-chip:hover{border-color:rgba(245,185,60,.6)}
+.qty-chip.active{border-color:var(--gold);color:var(--gold2);background:rgba(245,185,60,.1)}
+.summary{
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--panel2);border:1px dashed var(--line);border-radius:10px;
+  padding:12px 14px;margin-top:14px;font-size:14px;
+}
+.summary .calc{color:var(--sub);font-size:13px}
+.summary .total{font-size:22px;font-weight:800;color:var(--gold)}
+.btn-primary{
+  width:100%;min-height:48px;border:0;border-radius:12px;cursor:pointer;
+  background:linear-gradient(135deg,var(--gold2),var(--gold) 55%,#e09b1f);
+  color:#231a05;font-size:17px;font-weight:700;letter-spacing:2px;
+  box-shadow:0 6px 18px rgba(245,185,60,.3);transition:.15s;margin-top:16px;
+}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.6;cursor:wait}
+.btn-ghost{
+  min-height:44px;padding:0 18px;border-radius:10px;cursor:pointer;
+  background:transparent;border:1px solid var(--line);color:var(--sub);font-size:14px;
+}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold2)}
+.btn-danger{
+  min-height:44px;padding:0 18px;border-radius:10px;cursor:pointer;width:100%;
+  background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.5);color:var(--bad);
+  font-size:15px;font-weight:600;margin-top:10px;
+}
+.btn-ok{
+  min-height:44px;padding:0 18px;border-radius:10px;cursor:pointer;width:100%;
+  background:rgba(61,220,132,.12);border:1px solid rgba(61,220,132,.5);color:var(--ok);
+  font-size:15px;font-weight:600;margin-top:10px;
+}
+/* SECTION: qr setting */
+.qr-current{
+  background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+  padding:14px;text-align:center;margin-bottom:14px;
+}
+.qr-current img{width:180px;height:180px;object-fit:contain;border-radius:8px;display:block;margin:0 auto;background:#fff}
+.qr-current .qr-cur-url{
+  color:var(--sub);font-size:11px;margin-top:10px;word-break:break-all;line-height:1.5;
+}
+.file-row{
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+}
+.file-row input[type=file]{
+  flex:1;min-width:200px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:10px;color:var(--text);padding:10px 12px;min-height:44px;outline:none;
+}
+.qr-or-sep{text-align:center;color:var(--sub);font-size:12px;padding:4px 0}
+/* SECTION: success */
+.success-box{
+  display:none;text-align:center;padding:26px 16px;
+}
+.success-box.show{display:block;animation:fade .3s ease}
+.ok-circle{
+  width:64px;height:64px;margin:0 auto 14px;border-radius:50%;
+  background:rgba(61,220,132,.15);border:2px solid var(--ok);
+  display:flex;align-items:center;justify-content:center;
+}
+.ok-circle svg{width:32px;height:32px}
+.success-box h3{font-size:19px;margin-bottom:8px}
+.ticket-no{
+  display:inline-block;margin:8px 0 4px;padding:10px 20px;border-radius:10px;
+  background:var(--panel2);border:1px dashed var(--gold);color:var(--gold2);
+  font-size:20px;font-weight:800;letter-spacing:2px;font-family:Consolas,monospace;
+}
+.success-box .sub{color:var(--sub);font-size:13px}
+.success-actions{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+/* SECTION: pay-modal */
+.modal-mask{
+  display:none;position:fixed;inset:0;z-index:50;
+  background:rgba(8,9,15,.72);backdrop-filter:blur(3px);
+  align-items:flex-start;justify-content:center;
+  padding:calc(24px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+  overflow-y:auto;
+}
+.modal-mask.show{display:flex}
+.pay-modal{
+  width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;padding:24px 20px;text-align:center;animation:fade .25s ease;
+}
+.pay-modal h3{font-size:18px;margin-bottom:10px}
+.pay-modal .pay-tip{color:var(--sub);font-size:14px;line-height:1.6;margin-bottom:12px}
+.pay-amount-row{
+  display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:14px;
+}
+.pay-amount-row .label{color:var(--sub);font-size:14px}
+.pay-amount{font-size:34px;font-weight:800;color:var(--gold)}
+.qr-box{
+  background:#fff;border-radius:12px;padding:10px;display:inline-block;margin-bottom:6px;
+}
+.qr-box img{
+  display:block;width:240px;height:240px;object-fit:contain;border-radius:6px;
+}
+.qr-fallback{
+  display:none;width:240px;height:240px;align-items:center;justify-content:center;
+  color:#666;font-size:13px;line-height:1.6;text-align:center;padding:16px;
+}
+.qr-fallback.show{display:flex}
+.pay-modal .qr-note{color:var(--sub);font-size:12px;margin-bottom:14px}
+.pay-modal .btn-primary{margin-top:4px}
+.pay-modal .btn-ghost{width:100%;margin-top:10px}
+/* SECTION: login-modal */
+.login-modal{
+  width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;padding:24px 20px;animation:fade .25s ease;margin:auto;
+}
+.login-modal h3{font-size:18px;margin-bottom:6px;text-align:center}
+.login-modal .tip{color:var(--sub);font-size:13px;text-align:center;margin-bottom:16px}
+.login-modal.shake{animation:shake .35s}
+@keyframes shake{
+  0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)}
+}
+@media (prefers-reduced-motion:reduce){.login-modal.shake{animation:none}}
+.login-actions{display:flex;gap:10px;margin-top:16px}
+.login-actions .btn-primary{margin-top:0}
+.login-actions .btn-ghost{margin-top:0;flex:0 0 auto}
+/* SECTION: site-closed */
+.closed-overlay{
+  display:none;position:fixed;inset:0;z-index:60;
+  background:radial-gradient(1000px 400px at 50% 0%,#3a2020 0%,#14101a 60%);
+  align-items:center;justify-content:center;padding:24px 16px;overflow-y:auto;
+}
+.closed-overlay.show{display:flex}
+.closed-box{max-width:460px;width:100%;text-align:center;padding:20px 0}
+.closed-icon{font-size:56px;margin-bottom:14px}
+.closed-box h2{font-size:22px;margin-bottom:10px;color:var(--bad)}
+.closed-reason{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,107,107,.35);
+  border-radius:12px;padding:16px;color:var(--text);font-size:14px;line-height:1.8;
+  white-space:pre-wrap;word-break:break-word;margin-bottom:16px;text-align:left;
+}
+.closed-box .sub{color:var(--sub);font-size:13px;margin-bottom:20px}
+.closed-box .admin-entry{position:static;display:inline-block}
+/* SECTION: query */
+.query-bar{display:flex;gap:10px;flex-wrap:wrap}
+.query-bar input{flex:1;min-width:200px}
+.query-bar .btn-primary{width:auto;margin-top:0;min-width:120px;flex:0 0 auto;padding:0 22px}
+.status-filter{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+.chip{
+  min-height:36px;padding:6px 14px;border-radius:999px;cursor:pointer;font-size:13px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--sub);
+}
+.chip.active{border-color:var(--gold);color:var(--gold2);background:rgba(245,185,60,.1)}
+.ticket{
+  background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+  padding:14px 16px;margin-top:12px;
+}
+.ticket-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.ticket-no-sm{font-family:Consolas,monospace;font-weight:700;color:var(--gold2);font-size:15px;letter-spacing:1px}
+.badge{
+  font-size:12px;padding:4px 12px;border-radius:999px;font-weight:600;white-space:nowrap;
+}
+.badge.pending{background:rgba(245,185,60,.15);color:var(--warn);border:1px solid rgba(245,185,60,.4)}
+.badge.processing{background:rgba(90,162,255,.15);color:var(--info);border:1px solid rgba(90,162,255,.4)}
+.badge.done{background:rgba(61,220,132,.15);color:var(--ok);border:1px solid rgba(61,220,132,.4)}
+.badge.cancelled{background:rgba(255,107,107,.12);color:var(--bad);border:1px solid rgba(255,107,107,.4)}
+.badge.open{background:rgba(61,220,132,.15);color:var(--ok);border:1px solid rgba(61,220,132,.4)}
+.badge.closed{background:rgba(154,160,184,.15);color:var(--sub);border:1px solid rgba(154,160,184,.4)}
+.ticket-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 16px;margin-top:10px}
+.ticket-body .kv{font-size:13px}
+.ticket-body .kv b{color:var(--sub);font-weight:400;margin-right:6px}
+.ticket-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);flex-wrap:wrap;gap:8px}
+.ticket-foot .time{color:var(--sub);font-size:12px}
+.link-btn{background:none;border:0;color:var(--info);font-size:13px;cursor:pointer;min-height:32px;padding:4px 8px}
+.link-btn.danger{color:var(--bad)}
+.link-btn:disabled{color:var(--sub);opacity:.5;cursor:not-allowed}
+/* SECTION: support-chat */
+.chat-box{
+  background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+  height:380px;overflow-y:auto;padding:14px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.chat-box .chat-empty{margin:auto;color:var(--sub);font-size:13px;text-align:center}
+.bubble{
+  max-width:78%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.5;
+  word-break:break-word;white-space:pre-wrap;
+}
+.bubble.user{
+  align-self:flex-end;border-bottom-right-radius:4px;
+  background:linear-gradient(135deg,var(--gold2),var(--gold));color:#231a05;
+}
+.bubble.staff{
+  align-self:flex-start;border-bottom-left-radius:4px;
+  background:#2b2f45;color:var(--text);border:1px solid var(--line);
+}
+.bubble .b-meta{display:block;font-size:10px;opacity:.7;margin-top:4px}
+.chat-input-row{display:flex;gap:8px;margin-top:10px}
+.chat-input-row input{
+  flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  color:var(--text);padding:11px 12px;min-height:44px;outline:none;min-width:0;
+}
+.chat-input-row input:focus{border-color:var(--gold)}
+.chat-input-row .btn-primary{width:auto;margin-top:0;min-width:90px;flex:0 0 auto;letter-spacing:0}
+.chat-head-line{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.chat-head-line .who{font-size:14px;font-weight:600}
+.chat-head-line .who span{color:var(--sub);font-weight:400;font-size:12px;margin-left:6px}
+.session-item{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:12px 14px;margin-top:10px;cursor:pointer;transition:.15s;
+}
+.session-item:hover{border-color:rgba(245,185,60,.5)}
+.session-item.active{border-color:var(--gold);background:rgba(245,185,60,.08)}
+.session-item .s-main{min-width:0}
+.session-item .s-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.session-item .s-last{
+  color:var(--sub);font-size:12px;margin-top:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;
+}
+.session-item .s-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:0 0 auto}
+.session-item .s-time{color:var(--sub);font-size:11px}
+.unread-badge{
+  min-width:18px;height:18px;border-radius:999px;background:var(--bad);color:#fff;
+  font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;
+  padding:0 5px;
+}
+#adminChatPanel{margin-top:14px;border-top:1px dashed var(--line);padding-top:14px}
+/* SECTION: admin */
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.stat{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:14px;text-align:center;
+}
+.stat .num{font-size:24px;font-weight:800;color:var(--gold)}
+.stat .lbl{font-size:12px;color:var(--sub);margin-top:2px}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.admin-actions .link-btn{border:1px solid var(--line);border-radius:8px}
+.site-status-line{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.dot.open{background:var(--ok);box-shadow:0 0 8px rgba(61,220,132,.6)}
+.dot.closed{background:var(--bad);box-shadow:0 0 8px rgba(255,107,107,.6)}
+.notice-admin-item{
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:12px 14px;margin-top:10px;
+}
+.notice-admin-item .n-title{font-weight:600;font-size:14px}
+.notice-admin-item .n-content{color:var(--sub);font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word}
+.notice-admin-item .n-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.notice-admin-item .n-time{color:var(--sub);font-size:11px}
+.empty{
+  text-align:center;padding:40px 16px;color:var(--sub);
+}
+.empty svg{width:56px;height:56px;opacity:.5;margin-bottom:10px}
+.empty p{font-size:14px}
+/* SECTION: toast */
+.toast{
+  position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
+  background:#2b2f45;border:1px solid var(--line);color:var(--text);
+  padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;
+  transition:.25s;z-index:99;max-width:88vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.4);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(61,220,132,.5)}
+.toast.bad{border-color:rgba(255,107,107,.5)}
+/* SECTION: responsive */
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .header h1{font-size:20px}
+  .wrap{padding:14px 12px}
+  .query-bar .btn-primary{width:100%}
+  .price-hero .unit{font-size:34px}
+  .qr-box img,.qr-fallback{width:200px;height:200px}
+  .pay-amount{font-size:28px}
+  .admin-entry{position:static;margin-top:10px}
+  .tab-btn{font-size:13px;padding:0 4px}
+  .chat-box{height:320px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- SECTION: header -->
+  <header class="header">
+    <div class="logo">
+      <svg class="coin-icon" viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" fill="#f5b93c" stroke="#c98a12" stroke-width="3"/>
+        <circle cx="24" cy="24" r="14" fill="none" stroke="#c98a12" stroke-width="2" stroke-dasharray="3 3"/>
+        <text x="24" y="31" text-anchor="middle" font-size="19" font-weight="bold" fill="#7a4f05" font-family="sans-serif">杏</text>
+      </svg>
+      <h1>杏柒创游世界 <span class="hl">卖币工具</span></h1>
+    </div>
+    <p>G币订购工单 · 实时存储数据</p>
+    <span class="demo-tag" id="cloudTag">☁️ 正在连接云端…</span>
+    <button class="admin-entry" id="btnAdminEntry" type="button">⚙️ 管理员</button>
+  </header>
+  <!-- SECTION: tabs -->
+  <nav class="tabs" role="tablist">
+    <button class="tab-btn active" id="tabOrder" role="tab" aria-selected="true">📝 订购</button>
+    <button class="tab-btn" id="tabQuery" role="tab" aria-selected="false">🔍 查询</button>
+    <button class="tab-btn" id="tabSupport" role="tab" aria-selected="false">💬 客服</button>
+    <button class="tab-btn" id="tabAdmin" role="tab" aria-selected="false" hidden>🛡️ 后台</button>
+  </nav>
+  <!-- SECTION: view-order -->
+  <section class="panel-view active" id="viewOrder">
+    <div id="userNoticeArea"></div>
+    <form class="card" id="orderForm" novalidate>
+      <h2>订购G币</h2>
+      <p class="tip">统一单价，按万币计价；可点选常用数量或直接输入</p>
+      <div class="price-hero">
+        <span class="unit">¥1.3</span>
+        <span class="per">/ 万币</span>
+      </div>
+      <div class="qty-presets" id="qtyPresets">
+        <button class="qty-chip" type="button" data-coins="10000">1万币 · ¥1.3</button>
+        <button class="qty-chip" type="button" data-coins="50000">5万币 · ¥6.5</button>
+        <button class="qty-chip" type="button" data-coins="100000">10万币 · ¥13</button>
+        <button class="qty-chip" type="button" data-coins="500000">50万币 · ¥65</button>
+        <button class="qty-chip" type="button" data-coins="1000000">100万币 · ¥130</button>
+      </div>
+      <h2 style="margin-top:22px">填写订购信息</h2>
+      <p class="tip">带 <span style="color:var(--bad)">*</span> 的为必填项，请确保创游信息准确，否则无法到账</p>
+      <div class="grid">
+        <div class="field">
+          <label for="coins">购买币数<span class="req">*</span></label>
+          <input id="coins" type="number" min="10000" max="100000000" step="10000" placeholder="按万币购买，如 10000" inputmode="numeric">
+          <span class="err-msg">币数需为 10,000 的整数倍（1万 ~ 1亿）</span>
+        </div>
+        <div class="field">
+          <label for="gameName">创游名称<span class="req">*</span></label>
+          <input id="gameName" type="text" placeholder="如：『.Mo杏柒⁺◇』" maxlength="30">
+          <span class="err-msg">请填写创游名称</span>
+        </div>
+        <div class="field">
+          <label for="gameId">创游id<span class="req">*</span></label>
+          <input id="gameId" type="text" placeholder="如：43484943" maxlength="30" inputmode="numeric">
+          <span class="err-msg">请填写创游id</span>
+        </div>
+        <div class="field">
+          <label for="contact">联系方式<span class="req">*</span></label>
+          <input id="contact" type="text" placeholder="QQ号 / 微信号，用于发货通知" maxlength="30">
+          <span class="err-msg">请填写有效的联系方式</span>
+        </div>
+        <div class="field">
+          <label for="coupon">优惠码（暂未完工）</label>
+          <input id="coupon" type="text" placeholder="如 XQ777" maxlength="20" disabled>
+        </div>
+        <div class="field full">
+          <label for="remark">备注（选填）</label>
+          <textarea id="remark" placeholder="其他需要说明的信息，如指定发货时间等" maxlength="200"></textarea>
+        </div>
+      </div>
+      <div class="summary">
+        <span class="calc" id="calcText">¥1.3 / 万币 × 0 万币</span>
+        <span class="total" id="totalPrice">¥0.00</span>
+      </div>
+      <button type="submit" class="btn-primary" id="btnSubmitOrder" data-primary-action>提交订购工单</button>
+    </form>
+    <!-- SECTION: order-success -->
+    <div class="card success-box" id="successBox">
+      <div class="ok-circle">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 12.5l5 5L20 6.5" stroke="#3ddc84" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3>订购工单提交成功！</h3>
+      <p class="sub">您的工单号为</p>
+      <div class="ticket-no" id="newTicketNo">--</div>
+      <p class="sub">请牢记工单号，可在「查询工单」页跟踪处理进度<br>客服将尽快与您联系确认支付与发货</p>
+      <div class="success-actions">
+        <button class="btn-ghost" id="btnCopyNo" type="button">复制工单号</button>
+        <button class="btn-ghost" id="btnGoQuery" type="button">去查询进度</button>
+        <button class="btn-ghost" id="btnGoSupport" type="button">联系在线客服</button>
+        <button class="btn-ghost" id="btnNewOrder" type="button">再下一单</button>
+      </div>
+    </div>
+  </section>
+  <!-- SECTION: view-query -->
+  <section class="panel-view" id="viewQuery">
+    <div class="card">
+      <h2>查询工单</h2>
+      <p class="tip">输入工单号精确查询，或输入联系方式 / 创游名称 / 创游id 查询关联工单；留空则显示全部工单</p>
+      <div class="query-bar">
+        <input id="queryInput" type="text" placeholder="工单号 / 联系方式 / 创游名称 / 创游id">
+        <button class="btn-primary" id="btnQuery" type="button" data-primary-action>查询</button>
+      </div>
+      <div class="status-filter" id="statusFilter">
+        <button class="chip active" type="button" data-status="all">全部</button>
+        <button class="chip" type="button" data-status="pending">待处理</button>
+        <button class="chip" type="button" data-status="processing">处理中</button>
+        <button class="chip" type="button" data-status="done">已完成</button>
+        <button class="chip" type="button" data-status="cancelled">已取消</button>
+      </div>
+    </div>
+    <div id="ticketList"></div>
+  </section>
+  <!-- SECTION: view-support -->
+  <section class="panel-view" id="viewSupport">
+    <div class="card" id="supportStartCard">
+      <h2>联系在线客服</h2>
+      <p class="tip">填写昵称和联系方式发起会话；聊天窗口打开期间会自动接收客服的新回复</p>
+      <div class="grid">
+        <div class="field">
+          <label for="supNickname">昵称<span class="req">*</span></label>
+          <input id="supNickname" type="text" placeholder="怎么称呼你" maxlength="20">
+          <span class="err-msg">请填写昵称</span>
+        </div>
+        <div class="field">
+          <label for="supContact">联系方式<span class="req">*</span></label>
+          <input id="supContact" type="text" placeholder="QQ号 / 微信号" maxlength="30">
+          <span class="err-msg">请填写有效的联系方式</span>
+        </div>
+      </div>
+      <button class="btn-primary" id="btnStartSession" type="button" data-primary-action>发起会话</button>
+    </div>
+    <div class="card" id="supportChatCard" style="display:none">
+      <div class="chat-head-line">
+        <span class="who" id="supChatTitle">与客服的会话</span>
+        <span class="badge open" id="supSessionBadge">进行中</span>
+      </div>
+      <div class="chat-box" id="userChatBox"></div>
+      <div class="chat-input-row">
+        <input id="userMsgInput" type="text" placeholder="输入消息…" maxlength="500">
+        <button class="btn-primary" id="btnSendUserMsg" type="button" data-primary-action>发送</button>
+      </div>
+      <button class="btn-ghost" id="btnEndSession" type="button" style="width:100%;margin-top:10px">结束本次会话</button>
+      <button class="btn-ghost" id="btnNewSession" type="button" style="width:100%;margin-top:10px;display:none">发起新会话</button>
+    </div>
+  </section>
+  <!-- SECTION: view-admin -->
+  <section class="panel-view" id="viewAdmin">
+    <div class="admin-stats" id="adminStats"></div>
+    <div class="card">
+      <h2>网站状态</h2>
+      <p class="tip">关停后访客将看到关停页面，仅管理员可登录后台；关停原因支持自定义</p>
+      <div class="site-status-line">
+        <span class="dot open" id="siteDot"></span>
+        <span id="siteStatusText">当前状态：正常运行中</span>
+      </div>
+      <div class="field">
+        <label for="closeReason">关停原因（显示在关停页面上）</label>
+        <textarea id="closeReason" placeholder="如：系统维护升级中，预计今晚 22:00 恢复，给您带来不便敬请谅解…" maxlength="300"></textarea>
+      </div>
+      <button class="btn-danger" id="btnCloseSite" type="button">🔒 关停网站</button>
+      <button class="btn-ok" id="btnOpenSite" type="button">🔓 恢复网站运行</button>
+      <button class="btn-ghost" id="btnLogout" type="button" style="width:100%;margin-top:10px">退出登录</button>
+    </div>
+    <div class="card" id="qrSettingCard">
+      <h2>收款码设置</h2>
+      <p class="tip">收款码地址已存储在云端 site_config 中，修改后全站立即生效；上传的新图片会保存到 Supabase assets 桶，永久不过期</p>
+      <div class="qr-current">
+        <img id="qrPreview" alt="当前收款码">
+        <div class="qr-cur-url" id="qrCurrentUrl">--</div>
+      </div>
+      <div class="field">
+        <label>上传新收款码图片（保存到 assets 桶）</label>
+        <div class="file-row">
+          <input type="file" id="qrFileInput" accept="image/*">
+          <button class="btn-ghost" id="btnUploadQr" type="button">上传</button>
+        </div>
+      </div>
+      <div class="qr-or-sep">— 或 —</div>
+      <div class="field">
+        <label>粘贴收款码图片链接</label>
+        <input type="text" id="qrUrlInput" placeholder="https://… 图片永久链接">
+      </div>
+      <button class="btn-primary" id="btnSaveQr" type="button" data-primary-action style="margin-top:12px">💳 修改收款码</button>
+    </div>
+    <div class="card">
+      <h2>客服工作台</h2>
+      <p class="tip">点击会话进入聊天并回复；停留在后台期间每 5 秒自动刷新新消息，红点为未读</p>
+      <div id="adminSessionList"></div>
+      <div id="adminChatPanel" style="display:none">
+        <div class="chat-head-line">
+          <span class="who" id="adminChatTitle">会话</span>
+          <span class="badge open" id="adminSessionBadge">进行中</span>
+        </div>
+        <div class="chat-box" id="adminChatBox"></div>
+        <div class="chat-input-row">
+          <input id="adminMsgInput" type="text" placeholder="输入回复内容…" maxlength="500">
+          <button class="btn-primary" id="btnSendStaffMsg" type="button" data-primary-action>回复</button>
+        </div>
+        <div class="admin-actions">
+          <button class="link-btn" id="btnToggleSession" type="button">关闭会话</button>
+          <button class="link-btn danger" id="btnDeleteSession" type="button">删除会话</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>公告管理</h2>
+      <p class="tip">发布的公告会展示在用户端「订购工单」页面顶部，最多展示最近 5 条</p>
+      <div class="field">
+        <label for="noticeTitle">公告标题<span class="req">*</span></label>
+        <input id="noticeTitle" type="text" placeholder="如：国庆活动公告" maxlength="40">
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label for="noticeContent">公告内容<span class="req">*</span></label>
+        <textarea id="noticeContent" placeholder="输入公告正文…" maxlength="500"></textarea>
+      </div>
+      <button class="btn-primary" id="btnPublishNotice" type="button" data-primary-action style="margin-top:12px">📢 发布公告</button>
+      <div id="adminNoticeList"></div>
+    </div>
+    <div class="card">
+      <h2>工单处理</h2>
+      <p class="tip">点击状态按钮流转工单：待处理 → 处理中 → 已完成；也可取消、恢复或删除工单</p>
+      <div class="query-bar" style="margin-bottom:6px">
+        <input id="adminQueryInput" type="text" placeholder="搜索工单号 / 联系方式 / 创游名称 / 创游id">
+        <button class="btn-ghost" id="btnAdminRefresh" type="button">↻ 刷新</button>
+      </div>
+      <div class="status-filter" id="adminStatusFilter">
+        <button class="chip active" type="button" data-status="all">全部</button>
+        <button class="chip" type="button" data-status="pending">待处理</button>
+        <button class="chip" type="button" data-status="processing">处理中</button>
+        <button class="chip" type="button" data-status="done">已完成</button>
+        <button class="chip" type="button" data-status="cancelled">已取消</button>
+      </div>
+      <div id="adminTicketList"></div>
+    </div>
+  </section>
+</div>
+<!-- SECTION: pay-modal-html -->
+<div class="modal-mask" id="payModal" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+  <div class="pay-modal">
+    <h3 id="payTitle">扫码支付</h3>
+    <p class="pay-tip">请保存收款码到微信，按照金额进行支付</p>
+    <div class="pay-amount-row">
+      <span class="label">所需金额</span>
+      <span class="pay-amount" id="payAmount">¥0.00</span>
+    </div>
+    <div class="qr-box">
+      <img id="payQrImg" src="" alt="微信收款码">
+      <div class="qr-fallback" id="payQrFallback">收款码加载失败<br>请检查网络后重新提交<br>或联系客服获取收款码</div>
+    </div>
+    <p class="qr-note">长按或截图保存收款码，打开微信扫一扫完成支付</p>
+    <button class="btn-primary" id="btnPayConfirm" type="button" data-primary-action>确定支付</button>
+    <button class="btn-ghost" id="btnPayCancel" type="button">暂不支付，返回修改</button>
+  </div>
+</div>
+<!-- SECTION: login-modal-html -->
+<div class="modal-mask" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="login-modal" id="loginBox">
+    <h3 id="loginTitle">🛡️ 管理员登录</h3>
+    <p class="tip">请输入管理密码进入后台</p>
+    <div class="field">
+      <label for="adminPassword">管理密码</label>
+      <input id="adminPassword" type="password" placeholder="请输入密码" maxlength="32" autocomplete="off">
+    </div>
+    <div class="login-actions">
+      <button class="btn-primary" id="btnLogin" type="button" data-primary-action>登 录</button>
+      <button class="btn-ghost" id="btnLoginCancel" type="button">取消</button>
+    </div>
+  </div>
+</div>
+<!-- SECTION: site-closed-html -->
+<div class="closed-overlay" id="closedOverlay">
+  <div class="closed-box">
+    <div class="closed-icon">🚧</div>
+    <h2>网站已暂停服务</h2>
+    <div class="closed-reason" id="closedReasonText">系统维护中，请稍后再来。</div>
+    <p class="sub">如需帮助请通过联系方式咨询客服</p>
+    <button class="admin-entry" id="btnAdminEntryClosed" type="button">⚙️ 管理员入口</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* SECTION: config */
+'use strict';
+var SUPABASE_URL = 'https://cwfznwpnnfxushsbmzas.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3Znpud3BubmZ4dXNoc2JtemFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzMDgxMzIsImV4cCI6MjEwNTg4NDEzMn0.UCpZjM4MqE_nD4vtE4RL7uzxNRRI141WQpjTOPHoEiE';
+var STORAGE_BUCKET = 'assets';
+var PAY_QR_DEFAULT = SUPABASE_URL + '/storage/v1/object/public/assets/IMG_20260925_104127.jpg';
+var ADMIN_PASSWORD = '43484943';
+var ADMIN_SESSION_KEY = 'xq7_admin_logged';
+var SUP_SESSION_KEY = 'xq7_support_session_v8';
+var SUP_SEEN_ADMIN_KEY = 'xq7_support_seen_admin_v8';
+var CACHE_TICKETS = 'xq7_cache_tickets_v7';
+var CACHE_NOTICES = 'xq7_cache_notices_v7';
+var CACHE_SITE = 'xq7_cache_site_v7';
+var LOCAL_SUPPORT_KEY = 'xq7_local_support_v8';
+var UNIT_PRICE = 1.3;   /* 每万币单价（元） */
+var COIN_STEP = 10000;  /* 购买步进：1万币 */
+var USER_POLL_MS = 4000;
+var ADMIN_POLL_MS = 5000;
+var STATUS_TEXT = {pending:'待处理', processing:'处理中', done:'已完成', cancelled:'已取消'};
+/* SECTION: state */
+var tickets = [];
+var notices = [];
+var siteConfig = {is_closed:false, close_reason:'', pay_qr_url:''};
+var cloudOK = false;
+var supportSession = null;   /* 用户端当前会话 {id,nickname,contact,status} */
+var userMsgs = [];
+var adminSessions = [];
+var adminMsgs = [];          /* 管理端当前打开会话的消息 */
+var adminActiveId = null;
+var userPollTimer = null;
+var adminPollTimer = null;
+/* SECTION: supabase-api */
+function sbHeaders(extra){
+  var h = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json'
+  };
+  if(extra){ for(var k in extra){ h[k] = extra[k]; } }
+  return h;
+}
+function sbFetch(path, opts){
+  opts = opts || {};
+  opts.headers = sbHeaders(opts.headers);
+  return fetch(SUPABASE_URL + '/rest/v1/' + path, opts).then(function(res){
+    if(!res.ok){
+      return res.text().then(function(txt){
+        var msg = txt;
+        try{ msg = JSON.parse(txt).message || txt; }catch(e){ /* ignore */ }
+        throw new Error('HTTP ' + res.status + ' ' + msg);
+      });
+    }
+    /* 兼容空响应体：204 No Content 及 return=minimal 的 201 空 body */
+    return res.text().then(function(txt){
+      if(!txt){ return null; }
+      try{ return JSON.parse(txt); }catch(e){ return txt; }
+    });
+  });
+}
+function sbUploadFile(file){
+  /* 上传到 Supabase Storage，返回公开 URL */
+  var ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
+  var fname = 'qr_' + Date.now() + '_' + Math.floor(Math.random()*1000) + '.' + ext;
+  return fetch(SUPABASE_URL + '/storage/v1/object/' + STORAGE_BUCKET + '/' + fname, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Content-Type': file.type || 'application/octet-stream',
+      'x-upsert': 'true'
+    },
+    body: file
+  }).then(function(res){
+    if(!res.ok){
+      return res.text().then(function(txt){
+        var msg = txt;
+        try{ msg = JSON.parse(txt).message || txt; }catch(e){ /* ignore */ }
+        throw new Error('HTTP ' + res.status + ' ' + msg);
+      });
+    }
+    return SUPABASE_URL + '/storage/v1/object/public/' + STORAGE_BUCKET + '/' + fname;
+  });
+}
+function normalizeTicket(r){
+  return {
+    ticket_no: r.ticket_no,
+    coins: Number(r.coins),
+    amount: Number(r.amount),
+    game_name: r.game_name,
+    game_id: r.game_id,
+    contact: r.contact,
+    coupon: r.coupon || '',
+    remark: r.remark || '',
+    status: r.status,
+    created_at: r.created_at,
+    updated_at: r.updated_at
+  };
+}
+function apiLoadAll(){
+  return Promise.all([
+    sbFetch('tickets?select=*&order=created_at.desc&limit=500'),
+    sbFetch('notices?select=*&order=created_at.desc&limit=50'),
+    sbFetch('site_config?select=*&id=eq.1&limit=1')
+  ]).then(function(res){
+    tickets = (res[0] || []).map(normalizeTicket);
+    notices = res[1] || [];
+    siteConfig = (res[2] && res[2][0]) ? res[2][0] : {is_closed:false, close_reason:'', pay_qr_url:''};
+    if(!siteConfig.pay_qr_url){ siteConfig.pay_qr_url = ''; }
+    cloudOK = true;
+    saveCaches();
+  });
+}
+function saveCaches(){
+  try{
+    localStorage.setItem(CACHE_TICKETS, JSON.stringify(tickets));
+    localStorage.setItem(CACHE_NOTICES, JSON.stringify(notices));
+    localStorage.setItem(CACHE_SITE, JSON.stringify(siteConfig));
+  }catch(e){ /* ignore */ }
+}
+function loadCaches(){
+  try{
+    var t = localStorage.getItem(CACHE_TICKETS);
+    var n = localStorage.getItem(CACHE_NOTICES);
+    var s = localStorage.getItem(CACHE_SITE);
+    if(t){ tickets = JSON.parse(t); }
+    if(n){ notices = JSON.parse(n); }
+    if(s){ siteConfig = JSON.parse(s); }
+  }catch(e){ /* ignore */ }
+}
+function setCloudTag(ok, msg){
+  var tag = $('cloudTag');
+  tag.className = 'cloud-tag ' + (ok ? 'online' : 'offline');
+  tag.textContent = ok ? '☁️ 已连接云端' : ('⚠️ 本地模式' + (msg ? '（' + msg + '）' : ''));
+}
+/* SECTION: utils */
+function $(id){ return document.getElementById(id); }
+function fmtTime(ts){
+  var d = new Date(ts);
+  if(isNaN(d.getTime())){ return '--'; }
+  function p(n){ return n < 10 ? '0' + n : '' + n; }
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function fmtMoney(n){ return '¥' + Number(n).toFixed(2); }
+function fmtWan(coins){
+  var w = coins / COIN_STEP;
+  return (Number.isInteger(w) ? w : w.toFixed(2)) + ' 万币';
+}
+function calcAmount(coins){
+  return Math.round(coins / COIN_STEP * UNIT_PRICE * 100) / 100;
+}
+function genTicketNo(){
+  var d = new Date();
+  function p(n){ return n < 10 ? '0' + n : '' + n; }
+  var seq = String((tickets.length % 999) + 1).padStart(3, '0');
+  var rand = String(Math.floor(Math.random()*9000)+1000);
+  return 'XQ' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + seq + rand;
+}
+var toastTimer = null;
+function showToast(msg, kind){
+  var t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (kind ? ' ' + kind : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.className = 'toast'; }, 2600);
+}
+function isAdmin(){
+  try{ return sessionStorage.getItem(ADMIN_SESSION_KEY) === '1'; }catch(e){ return false; }
+}
+function nowIso(){ return new Date().toISOString(); }
+/* SECTION: tabs */
+function stopPolls(){
+  if(userPollTimer){ clearInterval(userPollTimer); userPollTimer = null; }
+  if(adminPollTimer){ clearInterval(adminPollTimer); adminPollTimer = null; }
+}
+function switchTab(which){
+  stopPolls();
+  var order = which === 'order';
+  var query = which === 'query';
+  var support = which === 'support';
+  var admin = which === 'admin';
+  $('tabOrder').classList.toggle('active', order);
+  $('tabQuery').classList.toggle('active', query);
+  $('tabSupport').classList.toggle('active', support);
+  $('tabAdmin').classList.toggle('active', admin);
+  $('tabOrder').setAttribute('aria-selected', order ? 'true' : 'false');
+  $('tabQuery').setAttribute('aria-selected', query ? 'true' : 'false');
+  $('tabSupport').setAttribute('aria-selected', support ? 'true' : 'false');
+  $('tabAdmin').setAttribute('aria-selected', admin ? 'true' : 'false');
+  $('viewOrder').classList.toggle('active', order);
+  $('viewQuery').classList.toggle('active', query);
+  $('viewSupport').classList.toggle('active', support);
+  $('viewAdmin').classList.toggle('active', admin);
+  if(query){ renderList(); }
+  if(support){ enterSupportView(); }
+  if(admin){ renderAdminAll(); startAdminPoll(); }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+$('tabOrder').addEventListener('click', function(){ switchTab('order'); });
+$('tabQuery').addEventListener('click', function(){ switchTab('query'); });
+$('tabSupport').addEventListener('click', function(){ switchTab('support'); });
+$('tabAdmin').addEventListener('click', function(){ switchTab('admin'); });
+/* SECTION: unit-price & presets */
+function currentCoins(){
+  var v = parseInt($('coins').value, 10);
+  return isNaN(v) || v < 1 ? 0 : v;
+}
+function updateTotal(){
+  var coins = currentCoins();
+  $('calcText').textContent = '¥1.3 / 万币 × ' + (coins > 0 ? fmtWan(coins) : '0 万币');
+  $('totalPrice').textContent = fmtMoney(coins > 0 ? calcAmount(coins) : 0);
+  var chips = $('qtyPresets').querySelectorAll('.qty-chip');
+  for(var i=0;i<chips.length;i++){
+    chips[i].classList.toggle('active', coins > 0 && Number(chips[i].dataset.coins) === coins);
+  }
+}
+$('coins').addEventListener('input', updateTotal);
+var presetChips = $('qtyPresets').querySelectorAll('.qty-chip');
+for(var pi=0; pi<presetChips.length; pi++){
+  presetChips[pi].addEventListener('click', function(){
+    $('coins').value = this.dataset.coins;
+    updateTotal();
+  });
+}
+updateTotal();
+/* SECTION: order-form */
+function setInvalid(id, invalid){
+  var input = $(id);
+  if(!input){ return !invalid; }
+  var field = input.closest('.field');
+  field.classList.toggle('invalid', invalid);
+  return !invalid;
+}
+var pendingOrder = null; /* 已通过校验、等待支付确认的订单数据 */
+$('orderForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var ok = true;
+  var coinsRaw = $('coins').value.trim();
+  var coins = parseInt(coinsRaw, 10);
+  var coinsValid = coinsRaw !== '' && !isNaN(coins) && String(coins) === coinsRaw
+    && coins >= COIN_STEP && coins <= 100000000 && coins % COIN_STEP === 0;
+  ok = setInvalid('coins', !coinsValid) && ok;
+  ok = setInvalid('gameName', !$('gameName').value.trim()) && ok;
+  ok = setInvalid('gameId', !$('gameId').value.trim()) && ok;
+  var contact = $('contact').value.trim();
+  ok = setInvalid('contact', contact.length < 5) && ok;
+  if(!ok){
+    showToast('请检查表单中标红的必填项', 'bad');
+    return;
+  }
+  pendingOrder = {
+    coins: coins,
+    amount: calcAmount(coins),
+    game_name: $('gameName').value.trim(),
+    game_id: $('gameId').value.trim(),
+    contact: contact,
+    coupon: '',
+    remark: $('remark').value.trim()
+  };
+  $('payAmount').textContent = fmtMoney(pendingOrder.amount);
+  openPayModal();
+});
+/* SECTION: pay-modal */
+function currentPayQrUrl(){
+  return (siteConfig && siteConfig.pay_qr_url) ? siteConfig.pay_qr_url : PAY_QR_DEFAULT;
+}
+function openPayModal(){
+  /* 打开支付弹窗时，用当前有效的收款码地址 */
+  var url = currentPayQrUrl();
+  $('payQrImg').src = url;
+  $('payQrImg').style.display = '';
+  $('payQrFallback').classList.remove('show');
+  $('payModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closePayModal(){
+  $('payModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+$('payQrImg').addEventListener('error', function(){
+  $('payQrImg').style.display = 'none';
+  $('payQrFallback').classList.add('show');
+});
+$('btnPayCancel').addEventListener('click', function(){
+  pendingOrder = null;
+  closePayModal();
+  showToast('已返回，可修改订单信息后重新提交');
+});
+$('payModal').addEventListener('click', function(e){
+  if(e.target === $('payModal')){
+    pendingOrder = null;
+    closePayModal();
+  }
+});
+$('btnPayConfirm').addEventListener('click', function(){
+  if(!pendingOrder){ closePayModal(); return; }
+  var btn = $('btnPayConfirm');
+  btn.disabled = true;
+  btn.textContent = '正在提交…';
+  var now = nowIso();
+  var row = {
+    ticket_no: genTicketNo(),
+    coins: pendingOrder.coins,
+    amount: pendingOrder.amount,
+    game_name: pendingOrder.game_name,
+    game_id: pendingOrder.game_id,
+    contact: pendingOrder.contact,
+    coupon: pendingOrder.coupon,
+    remark: pendingOrder.remark,
+    status: 'pending',
+    created_at: now,
+    updated_at: now
+  };
+  var task = cloudOK
+    ? sbFetch('tickets', {method:'POST', headers:{'Prefer':'return=representation'}, body: JSON.stringify(row)})
+    : Promise.reject(new Error('offline'));
+  task.then(function(){
+    tickets.unshift(row);
+    saveCaches();
+    afterOrderSuccess(row.ticket_no);
+  }).catch(function(err){
+    cloudOK = false;
+    setCloudTag(false, '写入失败');
+    tickets.unshift(row);
+    saveCaches();
+    afterOrderSuccess(row.ticket_no);
+    showToast('云端写入失败，工单已暂存本机：' + err.message, 'bad');
+  }).then(function(){
+    pendingOrder = null;
+    btn.disabled = false;
+    btn.textContent = '确定支付';
+  });
+});
+function afterOrderSuccess(no){
+  closePayModal();
+  $('orderForm').style.display = 'none';
+  $('newTicketNo').textContent = no;
+  $('successBox').classList.add('show');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+/* SECTION: order-success-actions */
+$('btnCopyNo').addEventListener('click', function(){
+  var no = $('newTicketNo').textContent;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(no).then(function(){
+      showToast('工单号已复制：' + no, 'ok');
+    }, function(){
+      showToast('复制失败，请手动记录：' + no, 'bad');
+    });
+  }else{
+    showToast('当前浏览器不支持自动复制，工单号：' + no, 'bad');
+  }
+});
+$('btnGoQuery').addEventListener('click', function(){
+  $('queryInput').value = $('newTicketNo').textContent;
+  resetForm();
+  switchTab('query');
+});
+$('btnGoSupport').addEventListener('click', function(){
+  resetForm();
+  switchTab('support');
+});
+$('btnNewOrder').addEventListener('click', function(){ resetForm(); });
+function resetForm(){
+  $('successBox').classList.remove('show');
+  $('orderForm').style.display = 'block';
+  $('orderForm').reset();
+  updateTotal();
+  var invalids = document.querySelectorAll('.field.invalid');
+  for(var i=0;i<invalids.length;i++){ invalids[i].classList.remove('invalid'); }
+}
+/* SECTION: query */
+var currentStatus = 'all';
+var chips = $('statusFilter').querySelectorAll('.chip');
+for(var ci=0; ci<chips.length; ci++){
+  chips[ci].addEventListener('click', function(){
+    currentStatus = this.dataset.status;
+    var all = $('statusFilter').querySelectorAll('.chip');
+    for(var j=0;j<all.length;j++){ all[j].classList.toggle('active', all[j] === this); }
+    renderList();
+  });
+}
+$('btnQuery').addEventListener('click', function(){ refreshThen(renderList); });
+$('queryInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){ refreshThen(renderList); }
+});
+function refreshThen(cb){
+  if(!cloudOK){ cb(); return; }
+  sbFetch('tickets?select=*&order=created_at.desc&limit=500').then(function(res){
+    tickets = (res || []).map(normalizeTicket);
+    saveCaches();
+  }).catch(function(){ /* 查询失败时用现有数据 */ }).then(cb);
+}
+function matchKeyword(t, kw){
+  if(!kw){ return true; }
+  var gameId = t.game_id || '';
+  return (t.ticket_no.toLowerCase().indexOf(kw) !== -1)
+    || (t.contact.toLowerCase().indexOf(kw) !== -1)
+    || (t.game_name.toLowerCase().indexOf(kw) !== -1)
+    || (gameId.toLowerCase().indexOf(kw) !== -1);
+}
+function filteredTickets(){
+  var kw = $('queryInput').value.trim().toLowerCase();
+  return tickets.filter(function(t){
+    if(currentStatus !== 'all' && t.status !== currentStatus){ return false; }
+    return matchKeyword(t, kw);
+  });
+}
+/* SECTION: ticket-render */
+function buildTicketInfoBody(t){
+  var body = document.createElement('div');
+  body.className = 'ticket-body';
+  var kvs = [
+    ['币数', Number(t.coins).toLocaleString() + ' 币（' + fmtWan(Number(t.coins)) + '）'],
+    ['单价', '¥1.3 / 万币'],
+    ['金额', fmtMoney(t.amount)],
+    ['创游名称', t.game_name],
+    ['创游id', t.game_id || '--'],
+    ['联系方式', t.contact]
+  ];
+  if(t.coupon){ kvs.push(['优惠码', t.coupon]); }
+  if(t.remark){ kvs.push(['备注', t.remark]); }
+  kvs.forEach(function(pair){
+    var kv = document.createElement('div');
+    kv.className = 'kv';
+    var b = document.createElement('b');
+    b.textContent = pair[0];
+    kv.appendChild(b);
+    kv.appendChild(document.createTextNode(pair[1]));
+    body.appendChild(kv);
+  });
+  return body;
+}
+function buildTicketHead(t){
+  var head = document.createElement('div');
+  head.className = 'ticket-head';
+  var noEl = document.createElement('span');
+  noEl.className = 'ticket-no-sm';
+  noEl.textContent = t.ticket_no;
+  var badge = document.createElement('span');
+  badge.className = 'badge ' + t.status;
+  badge.textContent = STATUS_TEXT[t.status] || t.status;
+  head.appendChild(noEl);
+  head.appendChild(badge);
+  return head;
+}
+function buildTicketCard(t){
+  var card = document.createElement('div');
+  card.className = 'ticket';
+  card.appendChild(buildTicketHead(t));
+  card.appendChild(buildTicketInfoBody(t));
+  var foot = document.createElement('div');
+  foot.className = 'ticket-foot';
+  var time = document.createElement('span');
+  time.className = 'time';
+  time.textContent = '提交于 ' + fmtTime(t.created_at) + ' · 更新于 ' + fmtTime(t.updated_at);
+  foot.appendChild(time);
+  var actions = document.createElement('span');
+  if(t.status === 'pending' || t.status === 'processing'){
+    var cancelBtn = document.createElement('button');
+    cancelBtn.className = 'link-btn danger';
+    cancelBtn.type = 'button';
+    cancelBtn.textContent = '取消工单';
+    cancelBtn.addEventListener('click', function(){ cancelTicket(t.ticket_no); });
+    actions.appendChild(cancelBtn);
+  }
+  if(t.status === 'cancelled'){
+    var reBtn = document.createElement('button');
+    reBtn.className = 'link-btn';
+    reBtn.type = 'button';
+    reBtn.textContent = '重新下单';
+    reBtn.addEventListener('click', function(){
+      switchTab('order');
+      $('coins').value = t.coins;
+      $('gameName').value = t.game_name;
+      $('gameId').value = t.game_id || '';
+      $('contact').value = t.contact;
+      updateTotal();
+      showToast('已带入原工单信息，请确认后重新提交', 'ok');
+    });
+    actions.appendChild(reBtn);
+  }
+  foot.appendChild(actions);
+  card.appendChild(foot);
+  return card;
+}
+function renderEmpty(box, text){
+  var empty = document.createElement('div');
+  empty.className = 'empty';
+  empty.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+    '<circle cx="10.5" cy="10.5" r="6.5" stroke="#9aa0b8" stroke-width="2"/>' +
+    '<path d="M15.5 15.5L21 21" stroke="#9aa0b8" stroke-width="2" stroke-linecap="round"/>' +
+    '</svg>';
+  var p = document.createElement('p');
+  p.textContent = text;
+  empty.appendChild(p);
+  box.appendChild(empty);
+}
+function renderList(){
+  var box = $('ticketList');
+  box.innerHTML = '';
+  var list = filteredTickets();
+  if(list.length === 0){
+    renderEmpty(box, '没有找到符合条件的工单，换个关键词或状态试试');
+    return;
+  }
+  list.forEach(function(t){ box.appendChild(buildTicketCard(t)); });
+}
+/* SECTION: ticket-actions */
+function syncTicketStatus(no, status, msg){
+  var now = nowIso();
+  var done = function(){
+    for(var i=0;i<tickets.length;i++){
+      if(tickets[i].ticket_no === no){
+        tickets[i].status = status;
+        tickets[i].updated_at = now;
+        break;
+      }
+    }
+    saveCaches();
+    renderList();
+    if($('viewAdmin').classList.contains('active')){ renderAdminAll(); }
+    showToast(msg, 'ok');
+  };
+  if(cloudOK){
+    sbFetch('tickets?ticket_no=eq.' + encodeURIComponent(no), {
+      method:'PATCH',
+      body: JSON.stringify({status: status, updated_at: now})
+    }).then(done).catch(function(err){
+      done();
+      showToast('云端同步失败，已更新本机：' + err.message, 'bad');
+    });
+  }else{
+    done();
+  }
+}
+function cancelTicket(no){
+  if(window.confirm('确定取消工单 ' + no + ' 吗？')){
+    syncTicketStatus(no, 'cancelled', '工单已取消');
+  }
+}
+/* SECTION: support-local-fallback */
+function loadLocalSupport(){
+  try{
+    var raw = localStorage.getItem(LOCAL_SUPPORT_KEY);
+    if(raw){ return JSON.parse(raw); }
+  }catch(e){ /* ignore */ }
+  return {sessions:[], messages:[], nextId:1};
+}
+function saveLocalSupport(data){
+  try{ localStorage.setItem(LOCAL_SUPPORT_KEY, JSON.stringify(data)); }catch(e){ /* ignore */ }
+}
+var localSupport = loadLocalSupport();
+/* SECTION: support-user */
+function loadSupportSession(){
+  try{
+    var raw = localStorage.getItem(SUP_SESSION_KEY);
+    if(raw){ supportSession = JSON.parse(raw); }
+  }catch(e){ supportSession = null; }
+}
+function saveSupportSession(){
+  try{
+    if(supportSession){ localStorage.setItem(SUP_SESSION_KEY, JSON.stringify(supportSession)); }
+    else{ localStorage.removeItem(SUP_SESSION_KEY); }
+  }catch(e){ /* ignore */ }
+}
+function enterSupportView(){
+  if(supportSession){
+    $('supportStartCard').style.display = 'none';
+    $('supportChatCard').style.display = 'block';
+    $('supChatTitle').textContent = supportSession.nickname + ' 的会话';
+    renderSupportSessionState();
+    loadUserMsgs().then(function(){ startUserPoll(); });
+  }else{
+    $('supportStartCard').style.display = 'block';
+    $('supportChatCard').style.display = 'none';
+  }
+}
+function renderSupportSessionState(){
+  var closed = supportSession && supportSession.status === 'closed';
+  var badge = $('supSessionBadge');
+  badge.className = 'badge ' + (closed ? 'closed' : 'open');
+  badge.textContent = closed ? '已结束' : '进行中';
+  $('userMsgInput').disabled = !!closed;
+  $('btnSendUserMsg').disabled = !!closed;
+  $('btnEndSession').style.display = closed ? 'none' : 'block';
+  $('btnNewSession').style.display = closed ? 'block' : 'none';
+}
+function startUserPoll(){
+  if(userPollTimer){ clearInterval(userPollTimer); }
+  userPollTimer = setInterval(function(){
+    if($('viewSupport').classList.contains('active') && supportSession){
+      loadUserMsgs(true);
+    }
+  }, USER_POLL_MS);
+}
+$('btnStartSession').addEventListener('click', function(){
+  var ok = true;
+  ok = setInvalid('supNickname', !$('supNickname').value.trim()) && ok;
+  var contact = $('supContact').value.trim();
+  ok = setInvalid('supContact', contact.length < 5) && ok;
+  if(!ok){ showToast('请填写昵称和联系方式', 'bad'); return; }
+  var btn = $('btnStartSession');
+  btn.disabled = true;
+  var row = {
+    nickname: $('supNickname').value.trim(),
+    contact: contact,
+    status: 'open',
+    last_msg_at: nowIso(),
+    created_at: nowIso()
+  };
+  var finish = function(saved){
+    supportSession = saved;
+    saveSupportSession();
+    btn.disabled = false;
+    enterSupportView();
+    showToast('会话已建立，客服会尽快回复', 'ok');
+  };
+  if(cloudOK){
+    sbFetch('support_sessions', {method:'POST', headers:{'Prefer':'return=representation'}, body: JSON.stringify(row)})
+      .then(function(res){ finish(res && res[0] ? res[0] : row); })
+      .catch(function(err){
+        cloudOK = false;
+        setCloudTag(false, '连接失败');
+        row.id = localSupport.nextId++;
+        localSupport.sessions.push(row);
+        saveLocalSupport(localSupport);
+        finish(row);
+        showToast('云端不可用，会话已暂存本机：' + err.message, 'bad');
+      });
+  }else{
+    row.id = localSupport.nextId++;
+    localSupport.sessions.push(row);
+    saveLocalSupport(localSupport);
+    finish(row);
+  }
+});
+function loadUserMsgs(silent){
+  if(!supportSession){ return Promise.resolve(); }
+  var sid = supportSession.id;
+  if(cloudOK){
+    return Promise.all([
+      sbFetch('support_messages?select=*&session_id=eq.' + encodeURIComponent(sid) + '&order=id.asc&limit=200'),
+      sbFetch('support_sessions?select=*&id=eq.' + encodeURIComponent(sid) + '&limit=1')
+    ]).then(function(res){
+      userMsgs = res[0] || [];
+      if(res[1] && res[1][0]){
+        supportSession.status = res[1][0].status;
+        saveSupportSession();
+        renderSupportSessionState();
+      }
+      renderUserChat();
+    }).catch(function(){ if(!silent){ showToast('消息加载失败', 'bad'); } });
+  }
+  userMsgs = localSupport.messages.filter(function(m){ return m.session_id === sid; });
+  var ls = null;
+  for(var i=0;i<localSupport.sessions.length;i++){
+    if(localSupport.sessions[i].id === sid){ ls = localSupport.sessions[i]; break; }
+  }
+  if(ls){
+    supportSession.status = ls.status;
+    saveSupportSession();
+    renderSupportSessionState();
+  }
+  renderUserChat();
+  return Promise.resolve();
+}
+function buildBubble(m){
+  var b = document.createElement('div');
+  b.className = 'bubble ' + (m.sender === 'staff' ? 'staff' : 'user');
+  b.appendChild(document.createTextNode(m.content));
+  var meta = document.createElement('span');
+  meta.className = 'b-meta';
+  meta.textContent = (m.sender === 'staff' ? '客服 · ' : '') + fmtTime(m.created_at);
+  b.appendChild(meta);
+  return b;
+}
+function renderUserChat(){
+  var box = $('userChatBox');
+  var atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+  box.innerHTML = '';
+  if(userMsgs.length === 0){
+    var tip = document.createElement('div');
+    tip.className = 'chat-empty';
+    tip.textContent = '还没有消息，发送第一条消息开始咨询吧';
+    box.appendChild(tip);
+    return;
+  }
+  userMsgs.forEach(function(m){ box.appendChild(buildBubble(m)); });
+  if(atBottom || userMsgs.length <= 20){ box.scrollTop = box.scrollHeight; }
+}
+function sendUserMsg(){
+  if(!supportSession || supportSession.status === 'closed'){ return; }
+  var content = $('userMsgInput').value.trim();
+  if(!content){ showToast('请输入消息内容', 'bad'); return; }
+  $('userMsgInput').value = '';
+  var now = nowIso();
+  var row = {session_id: supportSession.id, sender: 'user', content: content, created_at: now};
+  var after = function(){
+    loadUserMsgs(true);
+  };
+  if(cloudOK){
+    Promise.all([
+      sbFetch('support_messages', {method:'POST', headers:{'Prefer':'return=minimal'}, body: JSON.stringify(row)}),
+      sbFetch('support_sessions?id=eq.' + encodeURIComponent(supportSession.id), {method:'PATCH', body: JSON.stringify({last_msg_at: now})})
+    ]).then(after).catch(function(err){
+      showToast('发送失败：' + err.message, 'bad');
+      $('userMsgInput').value = content;
+    });
+  }else{
+    row.id = localSupport.nextId++;
+    localSupport.messages.push(row);
+    for(var i=0;i<localSupport.sessions.length;i++){
+      if(localSupport.sessions[i].id === supportSession.id){ localSupport.sessions[i].last_msg_at = now; break; }
+    }
+    saveLocalSupport(localSupport);
+    after();
+  }
+}
+$('btnSendUserMsg').addEventListener('click', sendUserMsg);
+$('userMsgInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){ sendUserMsg(); }
+});
+$('btnEndSession').addEventListener('click', function(){
+  if(!supportSession){ return; }
+  if(!window.confirm('确定结束本次会话吗？结束后需发起新会话。')){ return; }
+  var done = function(){
+    supportSession.status = 'closed';
+    saveSupportSession();
+    renderSupportSessionState();
+    showToast('会话已结束', 'ok');
+  };
+  if(cloudOK){
+    sbFetch('support_sessions?id=eq.' + encodeURIComponent(supportSession.id), {
+      method:'PATCH', body: JSON.stringify({status:'closed'})
+    }).then(done).catch(function(err){ done(); showToast('云端同步失败：' + err.message, 'bad'); });
+  }else{
+    for(var i=0;i<localSupport.sessions.length;i++){
+      if(localSupport.sessions[i].id === supportSession.id){ localSupport.sessions[i].status = 'closed'; break; }
+    }
+    saveLocalSupport(localSupport);
+    done();
+  }
+});
+$('btnNewSession').addEventListener('click', function(){
+  supportSession = null;
+  saveSupportSession();
+  userMsgs = [];
+  $('supNickname').value = '';
+  $('supContact').value = '';
+  enterSupportView();
+});
+/* SECTION: support-admin */
+function loadSeenMap(){
+  try{
+    var raw = localStorage.getItem(SUP_SEEN_ADMIN_KEY);
+    if(raw){ return JSON.parse(raw); }
+  }catch(e){ /* ignore */ }
+  return {};
+}
+function saveSeenMap(map){
+  try{ localStorage.setItem(SUP_SEEN_ADMIN_KEY, JSON.stringify(map)); }catch(e){ /* ignore */ }
+}
+function startAdminPoll(){
+  if(adminPollTimer){ clearInterval(adminPollTimer); }
+  adminPollTimer = setInterval(function(){
+    if($('viewAdmin').classList.contains('active')){
+      loadAdminSessions(true);
+      if(adminActiveId !== null){ loadAdminMsgs(true); }
+    }
+  }, ADMIN_POLL_MS);
+}
+function loadAdminSessions(silent){
+  if(cloudOK){
+    return Promise.all([
+      sbFetch('support_sessions?select=*&order=last_msg_at.desc&limit=100'),
+      sbFetch('support_messages?select=*&order=id.desc&limit=300')
+    ]).then(function(res){
+      adminSessions = res[0] || [];
+      var msgs = res[1] || [];
+      renderAdminSessions(msgs);
+      if(adminActiveId !== null){ renderAdminStats(); }
+    }).catch(function(){ if(!silent){ showToast('会话列表加载失败', 'bad'); } });
+  }
+  adminSessions = localSupport.sessions.slice().sort(function(a,b){
+    return new Date(b.last_msg_at) - new Date(a.last_msg_at);
+  });
+  renderAdminSessions(localSupport.messages.slice().reverse());
+  return Promise.resolve();
+}
+function renderAdminSessions(allMsgsDesc){
+  var box = $('adminSessionList');
+  box.innerHTML = '';
+  if(adminSessions.length === 0){
+    renderEmpty(box, '暂无客服会话');
+    return;
+  }
+  var seenMap = loadSeenMap();
+  var lastBySession = {};
+  allMsgsDesc.forEach(function(m){
+    if(lastBySession[m.session_id] === undefined){ lastBySession[m.session_id] = m; }
+  });
+  adminSessions.forEach(function(s){
+    var item = document.createElement('div');
+    item.className = 'session-item' + (adminActiveId === s.id ? ' active' : '');
+    var main = document.createElement('div');
+    main.className = 's-main';
+    var name = document.createElement('div');
+    name.className = 's-name';
+    name.appendChild(document.createTextNode(s.nickname));
+    var st = document.createElement('span');
+    st.className = 'badge ' + (s.status === 'closed' ? 'closed' : 'open');
+    st.textContent = s.status === 'closed' ? '已结束' : '进行中';
+    st.style.fontSize = '10px';
+    st.style.padding = '2px 8px';
+    name.appendChild(st);
+    var last = document.createElement('div');
+    last.className = 's-last';
+    var lm = lastBySession[s.id];
+    last.textContent = (s.contact || '') + (lm ? (' · ' + (lm.sender === 'staff' ? '客服：' : '') + lm.content) : ' · 暂无消息');
+    main.appendChild(name);
+    main.appendChild(last);
+    var right = document.createElement('div');
+    right.className = 's-right';
+    var time = document.createElement('span');
+    time.className = 's-time';
+    time.textContent = fmtTime(s.last_msg_at || s.created_at);
+    right.appendChild(time);
+    if(lm && lm.sender === 'user' && Number(seenMap[s.id] || 0) < Number(lm.id)){
+      var un = document.createElement('span');
+      un.className = 'unread-badge';
+      un.textContent = '新';
+      right.appendChild(un);
+    }
+    item.appendChild(main);
+    item.appendChild(right);
+    item.addEventListener('click', function(){ openAdminSession(s.id); });
+    box.appendChild(item);
+  });
+}
+function openAdminSession(id){
+  adminActiveId = id;
+  $('adminChatPanel').style.display = 'block';
+  var s = null;
+  for(var i=0;i<adminSessions.length;i++){
+    if(adminSessions[i].id === id){ s = adminSessions[i]; break; }
+  }
+  if(s){
+    $('adminChatTitle').textContent = s.nickname + '（' + s.contact + '）';
+    var badge = $('adminSessionBadge');
+    badge.className = 'badge ' + (s.status === 'closed' ? 'closed' : 'open');
+    badge.textContent = s.status === 'closed' ? '已结束' : '进行中';
+    $('adminMsgInput').disabled = s.status === 'closed';
+    $('btnSendStaffMsg').disabled = s.status === 'closed';
+    $('btnToggleSession').textContent = s.status === 'closed' ? '重新打开会话' : '关闭会话';
+  }
+  loadAdminMsgs();
+  loadAdminSessions(true);
+}
+function markSessionSeen(id){
+  var seenMap = loadSeenMap();
+  var maxId = 0;
+  adminMsgs.forEach(function(m){ if(Number(m.id) > maxId){ maxId = Number(m.id); } });
+  if(maxId > 0){ seenMap[id] = maxId; saveSeenMap(seenMap); }
+}
+function loadAdminMsgs(silent){
+  if(adminActiveId === null){ return Promise.resolve(); }
+  var sid = adminActiveId;
+  if(cloudOK){
+    return sbFetch('support_messages?select=*&session_id=eq.' + encodeURIComponent(sid) + '&order=id.asc&limit=200')
+      .then(function(res){
+        adminMsgs = res || [];
+        renderAdminChat();
+        markSessionSeen(sid);
+      }).catch(function(){ if(!silent){ showToast('消息加载失败', 'bad'); } });
+  }
+  adminMsgs = localSupport.messages.filter(function(m){ return m.session_id === sid; });
+  renderAdminChat();
+  markSessionSeen(sid);
+  return Promise.resolve();
+}
+function renderAdminChat(){
+  var box = $('adminChatBox');
+  var atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+  box.innerHTML = '';
+  if(adminMsgs.length === 0){
+    var tip = document.createElement('div');
+    tip.className = 'chat-empty';
+    tip.textContent = '暂无消息';
+    box.appendChild(tip);
+    return;
+  }
+  adminMsgs.forEach(function(m){
+    /* 管理端视角：客服消息显示在右侧 */
+    var b = document.createElement('div');
+    b.className = 'bubble ' + (m.sender === 'staff' ? 'user' : 'staff');
+    b.appendChild(document.createTextNode(m.content));
+    var meta = document.createElement('span');
+    meta.className = 'b-meta';
+    meta.textContent = (m.sender === 'staff' ? '客服（我） · ' : '用户 · ') + fmtTime(m.created_at);
+    b.appendChild(meta);
+    box.appendChild(b);
+  });
+  if(atBottom || adminMsgs.length <= 20){ box.scrollTop = box.scrollHeight; }
+}
+function sendStaffMsg(){
+  if(adminActiveId === null){ return; }
+  var content = $('adminMsgInput').value.trim();
+  if(!content){ showToast('请输入回复内容', 'bad'); return; }
+  $('adminMsgInput').value = '';
+  var now = nowIso();
+  var row = {session_id: adminActiveId, sender: 'staff', content: content, created_at: now};
+  var after = function(){
+    loadAdminMsgs(true);
+    loadAdminSessions(true);
+  };
+  if(cloudOK){
+    Promise.all([
+      sbFetch('support_messages', {method:'POST', headers:{'Prefer':'return=minimal'}, body: JSON.stringify(row)}),
+      sbFetch('support_sessions?id=eq.' + encodeURIComponent(adminActiveId), {method:'PATCH', body: JSON.stringify({last_msg_at: now})})
+    ]).then(after).catch(function(err){
+      showToast('发送失败：' + err.message, 'bad');
+      $('adminMsgInput').value = content;
+    });
+  }else{
+    row.id = localSupport.nextId++;
+    localSupport.messages.push(row);
+    for(var i=0;i<localSupport.sessions.length;i++){
+      if(localSupport.sessions[i].id === adminActiveId){ localSupport.sessions[i].last_msg_at = now; break; }
+    }
+    saveLocalSupport(localSupport);
+    after();
+  }
+}
+$('btnSendStaffMsg').addEventListener('click', sendStaffMsg);
+$('adminMsgInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){ sendStaffMsg(); }
+});
+$('btnToggleSession').addEventListener('click', function(){
+  if(adminActiveId === null){ return; }
+  var s = null;
+  for(var i=0;i<adminSessions.length;i++){
+    if(adminSessions[i].id === adminActiveId){ s = adminSessions[i]; break; }
+  }
+  if(!s){ return; }
+  var newStatus = s.status === 'closed' ? 'open' : 'closed';
+  var done = function(){
+    s.status = newStatus;
+    openAdminSession(adminActiveId);
+    showToast(newStatus === 'closed' ? '会话已关闭' : '会话已重新打开', 'ok');
+  };
+  if(cloudOK){
+    sbFetch('support_sessions?id=eq.' + encodeURIComponent(adminActiveId), {
+      method:'PATCH', body: JSON.stringify({status: newStatus})
+    }).then(done).catch(function(err){ done(); showToast('云端同步失败：' + err.message, 'bad'); });
+  }else{
+    for(var j=0;j<localSupport.sessions.length;j++){
+      if(localSupport.sessions[j].id === adminActiveId){ localSupport.sessions[j].status = newStatus; break; }
+    }
+    saveLocalSupport(localSupport);
+    done();
+  }
+});
+$('btnDeleteSession').addEventListener('click', function(){
+  if(adminActiveId === null){ return; }
+  if(!window.confirm('确定删除这个会话吗？聊天记录将一并删除，不可恢复。')){ return; }
+  var id = adminActiveId;
+  var done = function(){
+    adminActiveId = null;
+    adminMsgs = [];
+    $('adminChatPanel').style.display = 'none';
+    loadAdminSessions(true);
+    renderAdminStats();
+    showToast('会话已删除', 'ok');
+  };
+  if(cloudOK){
+    sbFetch('support_sessions?id=eq.' + encodeURIComponent(id), {method:'DELETE'})
+      .then(done).catch(function(err){ done(); showToast('云端同步失败：' + err.message, 'bad'); });
+  }else{
+    localSupport.sessions = localSupport.sessions.filter(function(x){ return x.id !== id; });
+    localSupport.messages = localSupport.messages.filter(function(m){ return m.session_id !== id; });
+    saveLocalSupport(localSupport);
+    done();
+  }
+});
+/* SECTION: admin-login */
+function openLoginModal(){
+  $('adminPassword').value = '';
+  $('loginModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ $('adminPassword').focus(); }, 60);
+}
+function closeLoginModal(){
+  $('loginModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+function doLogin(){
+  if($('adminPassword').value === ADMIN_PASSWORD){
+    try{ sessionStorage.setItem(ADMIN_SESSION_KEY, '1'); }catch(e){ /* ignore */ }
+    closeLoginModal();
+    applyAdminState();
+    switchTab('admin');
+    showToast('欢迎回来，管理员', 'ok');
+  }else{
+    var box = $('loginBox');
+    box.classList.remove('shake');
+    void box.offsetWidth;
+    box.classList.add('shake');
+    showToast('密码错误，请重试', 'bad');
+    $('adminPassword').value = '';
+  }
+}
+$('btnAdminEntry').addEventListener('click', openLoginModal);
+$('btnAdminEntryClosed').addEventListener('click', openLoginModal);
+$('btnLogin').addEventListener('click', doLogin);
+$('btnLoginCancel').addEventListener('click', closeLoginModal);
+$('adminPassword').addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){ doLogin(); }
+});
+$('loginModal').addEventListener('click', function(e){
+  if(e.target === $('loginModal')){ closeLoginModal(); }
+});
+$('btnLogout').addEventListener('click', function(){
+  try{ sessionStorage.removeItem(ADMIN_SESSION_KEY); }catch(e){ /* ignore */ }
+  applyAdminState();
+  switchTab('order');
+  showToast('已退出管理员登录');
+});
+function applyAdminState(){
+  var logged = isAdmin();
+  $('tabAdmin').hidden = !logged;
+  $('btnAdminEntry').hidden = logged;
+  $('btnAdminEntryClosed').hidden = logged;
+  applySiteStatus();
+}
+/* SECTION: admin-site-status */
+function applySiteStatus(){
+  var closed = siteConfig.is_closed === true;
+  var reason = siteConfig.close_reason || '';
+  $('closedOverlay').classList.toggle('show', closed && !isAdmin());
+  if(!($('loginModal').classList.contains('show') || $('payModal').classList.contains('show'))){
+    document.body.style.overflow = (closed && !isAdmin()) ? 'hidden' : '';
+  }
+  $('siteDot').className = 'dot ' + (closed ? 'closed' : 'open');
+  $('siteStatusText').textContent = closed ? '当前状态：已关停（访客不可访问）' : '当前状态：正常运行中';
+  $('btnCloseSite').style.display = closed ? 'none' : 'block';
+  $('btnOpenSite').style.display = closed ? 'block' : 'none';
+  $('closedReasonText').textContent = (closed && reason) ? reason : '系统维护中，请稍后再来。';
+  $('closeReason').value = reason;
+}
+function syncSiteConfig(patch, okMsg){
+  var apply = function(){
+    if(patch.is_closed !== undefined){ siteConfig.is_closed = patch.is_closed; }
+    if(patch.close_reason !== undefined){ siteConfig.close_reason = patch.close_reason; }
+    if(patch.pay_qr_url !== undefined){ siteConfig.pay_qr_url = patch.pay_qr_url; }
+    saveCaches();
+    applySiteStatus();
+    showToast(okMsg, 'ok');
+  };
+  if(cloudOK){
+    sbFetch('site_config?id=eq.1', {
+      method:'PATCH',
+      body: JSON.stringify(Object.assign({updated_at: nowIso()}, patch))
+    }).then(apply).catch(function(err){
+      apply();
+      showToast('云端同步失败，已更新本机：' + err.message, 'bad');
+    });
+  }else{
+    apply();
+  }
+}
+$('btnCloseSite').addEventListener('click', function(){
+  var reason = $('closeReason').value.trim() || '系统维护中，请稍后再来。';
+  syncSiteConfig({is_closed: true, close_reason: reason}, '网站已关停，访客将看到关停页面');
+});
+$('btnOpenSite').addEventListener('click', function(){
+  syncSiteConfig({is_closed: false}, '网站已恢复运行');
+});
+/* SECTION: admin-qr */
+function renderQrSetting(){
+  var url = currentPayQrUrl();
+  $('qrPreview').src = url;
+  $('qrPreview').style.display = '';
+  $('qrCurrentUrl').textContent = url;
+  $('qrUrlInput').value = url;
+  $('qrFileInput').value = '';
+}
+function savePayQr(url){
+  syncSiteConfig({pay_qr_url: url}, '收款码已更新，全站立即生效');
+  renderQrSetting();
+}
+$('btnUploadQr').addEventListener('click', function(){
+  var file = $('qrFileInput').files[0];
+  if(!file){
+    showToast('请先选择要上传的收款码图片', 'bad');
+    return;
+  }
+  var btn = $('btnUploadQr');
+  btn.disabled = true;
+  btn.textContent = '上传中…';
+  sbUploadFile(file).then(function(url){
+    btn.disabled = false;
+    btn.textContent = '上传';
+    savePayQr(url);
+  }).catch(function(err){
+    btn.disabled = false;
+    btn.textContent = '上传';
+    showToast('上传失败：' + err.message, 'bad');
+  });
+});
+$('btnSaveQr').addEventListener('click', function(){
+  var url = $('qrUrlInput').value.trim();
+  if(!url || url.indexOf('http') !== 0){
+    showToast('请填写有效的图片链接（以 http 开头）', 'bad');
+    return;
+  }
+  savePayQr(url);
+});
+/* SECTION: admin-notices */
+$('btnPublishNotice').addEventListener('click', function(){
+  var title = $('noticeTitle').value.trim();
+  var content = $('noticeContent').value.trim();
+  if(!title || !content){
+    showToast('请填写公告标题和内容', 'bad');
+    return;
+  }
+  var row = {title: title, content: content, created_at: nowIso()};
+  var done = function(saved){
+    notices.unshift(saved);
+    saveCaches();
+    $('noticeTitle').value = '';
+    $('noticeContent').value = '';
+    renderAdminNotices();
+    renderUserNotices();
+    showToast('公告已发布', 'ok');
+  };
+  if(cloudOK){
+    sbFetch('notices', {method:'POST', headers:{'Prefer':'return=representation'}, body: JSON.stringify(row)})
+      .then(function(res){ done(res && res[0] ? res[0] : row); })
+      .catch(function(err){ done(row); showToast('云端同步失败，已保存到本机：' + err.message, 'bad'); });
+  }else{
+    row.id = Date.now();
+    done(row);
+  }
+});
+function deleteNotice(n){
+  if(!window.confirm('确定删除这条公告吗？')){ return; }
+  var done = function(){
+    notices = notices.filter(function(x){ return x !== n; });
+    saveCaches();
+    renderAdminNotices();
+    renderUserNotices();
+    showToast('公告已删除', 'ok');
+  };
+  if(cloudOK && n.id !== undefined){
+    sbFetch('notices?id=eq.' + encodeURIComponent(n.id), {method:'DELETE'})
+      .then(done)
+      .catch(function(err){ done(); showToast('云端同步失败，已删除本机副本：' + err.message, 'bad'); });
+  }else{
+    done();
+  }
+}
+function renderAdminNotices(){
+  var box = $('adminNoticeList');
+  box.innerHTML = '';
+  if(notices.length === 0){
+    renderEmpty(box, '暂无公告，发布后将展示在用户端首页');
+    return;
+  }
+  notices.forEach(function(n){
+    var item = document.createElement('div');
+    item.className = 'notice-admin-item';
+    var title = document.createElement('div');
+    title.className = 'n-title';
+    title.textContent = n.title;
+    var content = document.createElement('div');
+    content.className = 'n-content';
+    content.textContent = n.content;
+    var foot = document.createElement('div');
+    foot.className = 'n-foot';
+    var time = document.createElement('span');
+    time.className = 'n-time';
+    time.textContent = fmtTime(n.created_at);
+    var del = document.createElement('button');
+    del.className = 'link-btn danger';
+    del.type = 'button';
+    del.textContent = '删除';
+    del.addEventListener('click', function(){ deleteNotice(n); });
+    foot.appendChild(time);
+    foot.appendChild(del);
+    item.appendChild(title);
+    item.appendChild(content);
+    item.appendChild(foot);
+    box.appendChild(item);
+  });
+}
+function renderUserNotices(){
+  var box = $('userNoticeArea');
+  box.innerHTML = '';
+  if(notices.length === 0){ return; }
+  var card = document.createElement('div');
+  card.className = 'notice-card';
+  var head = document.createElement('div');
+  head.className = 'n-head';
+  head.textContent = '📢 最新公告';
+  card.appendChild(head);
+  notices.slice(0, 5).forEach(function(n){
+    var item = document.createElement('div');
+    item.className = 'notice-item';
+    var title = document.createElement('div');
+    title.className = 'n-title';
+    title.textContent = n.title;
+    var content = document.createElement('div');
+    content.className = 'n-content';
+    content.textContent = n.content;
+    var time = document.createElement('div');
+    time.className = 'n-time';
+    time.textContent = fmtTime(n.created_at);
+    item.appendChild(title);
+    item.appendChild(content);
+    item.appendChild(time);
+    card.appendChild(item);
+  });
+  box.appendChild(card);
+}
+/* SECTION: admin-tickets */
+var adminStatus = 'all';
+var adminChips = $('adminStatusFilter').querySelectorAll('.chip');
+for(var ai=0; ai<adminChips.length; ai++){
+  adminChips[ai].addEventListener('click', function(){
+    adminStatus = this.dataset.status;
+    var all = $('adminStatusFilter').querySelectorAll('.chip');
+    for(var j=0;j<all.length;j++){ all[j].classList.toggle('active', all[j] === this); }
+    renderAdminTickets();
+  });
+}
+$('adminQueryInput').addEventListener('input', renderAdminTickets);
+$('btnAdminRefresh').addEventListener('click', function(){
+  if(!cloudOK){ showToast('当前为本地模式，无法刷新云端数据', 'bad'); return; }
+  apiLoadAll().then(function(){
+    setCloudTag(true);
+    renderAdminAll();
+    renderUserNotices();
+    renderQrSetting();
+    showToast('已从云端刷新数据', 'ok');
+  }).catch(function(err){
+    showToast('刷新失败：' + err.message, 'bad');
+  });
+});
+function deleteTicket(no){
+  if(!window.confirm('确定删除工单 ' + no + ' 吗？删除后不可恢复。')){ return; }
+  var done = function(){
+    tickets = tickets.filter(function(t){ return t.ticket_no !== no; });
+    saveCaches();
+    renderAdminAll();
+    renderList();
+    showToast('工单已删除', 'ok');
+  };
+  if(cloudOK){
+    sbFetch('tickets?ticket_no=eq.' + encodeURIComponent(no), {method:'DELETE'})
+      .then(done)
+      .catch(function(err){ done(); showToast('云端同步失败，已删除本机副本：' + err.message, 'bad'); });
+  }else{
+    done();
+  }
+}
+function buildAdminTicketCard(t){
+  var card = document.createElement('div');
+  card.className = 'ticket';
+  card.appendChild(buildTicketHead(t));
+  card.appendChild(buildTicketInfoBody(t));
+  var foot = document.createElement('div');
+  foot.className = 'ticket-foot';
+  var time = document.createElement('span');
+  time.className = 'time';
+  time.textContent = '提交于 ' + fmtTime(t.created_at) + ' · 更新于 ' + fmtTime(t.updated_at);
+  foot.appendChild(time);
+  card.appendChild(foot);
+  var actions = document.createElement('div');
+  actions.className = 'admin-actions';
+  function addBtn(label, cls, fn){
+    var b = document.createElement('button');
+    b.className = 'link-btn' + (cls ? ' ' + cls : '');
+    b.type = 'button';
+    b.textContent = label;
+    b.addEventListener('click', fn);
+    actions.appendChild(b);
+  }
+  if(t.status === 'pending'){
+    addBtn('开始处理', '', function(){ syncTicketStatus(t.ticket_no, 'processing', '工单已转为处理中'); });
+    addBtn('直接完成', '', function(){ syncTicketStatus(t.ticket_no, 'done', '工单已完成'); });
+    addBtn('取消工单', 'danger', function(){ syncTicketStatus(t.ticket_no, 'cancelled', '工单已取消'); });
+  }else if(t.status === 'processing'){
+    addBtn('标记完成', '', function(){ syncTicketStatus(t.ticket_no, 'done', '工单已完成'); });
+    addBtn('取消工单', 'danger', function(){ syncTicketStatus(t.ticket_no, 'cancelled', '工单已取消'); });
+  }else if(t.status === 'cancelled'){
+    addBtn('恢复为待处理', '', function(){ syncTicketStatus(t.ticket_no, 'pending', '工单已恢复为待处理'); });
+  }
+  addBtn('删除', 'danger', function(){ deleteTicket(t.ticket_no); });
+  card.appendChild(actions);
+  return card;
+}
+function renderAdminTickets(){
+  var box = $('adminTicketList');
+  box.innerHTML = '';
+  var kw = $('adminQueryInput').value.trim().toLowerCase();
+  var list = tickets.filter(function(t){
+    if(adminStatus !== 'all' && t.status !== adminStatus){ return false; }
+    return matchKeyword(t, kw);
+  });
+  if(list.length === 0){
+    renderEmpty(box, '没有符合条件的工单');
+    return;
+  }
+  list.forEach(function(t){ box.appendChild(buildAdminTicketCard(t)); });
+}
+function renderAdminStats(){
+  var box = $('adminStats');
+  box.innerHTML = '';
+  var counts = {pending:0, processing:0, done:0, cancelled:0};
+  tickets.forEach(function(t){
+    if(counts[t.status] !== undefined){ counts[t.status]++; }
+  });
+  var items = [
+    [String(tickets.length), '全部工单'],
+    [String(counts.pending), '待处理'],
+    [String(counts.processing), '处理中'],
+    [String(counts.done), '已完成'],
+    [String(adminSessions.length), '客服会话']
+  ];
+  items.forEach(function(pair){
+    var s = document.createElement('div');
+    s.className = 'stat';
+    var num = document.createElement('div');
+    num.className = 'num';
+    num.textContent = pair[0];
+    var lbl = document.createElement('div');
+    lbl.className = 'lbl';
+    lbl.textContent = pair[1];
+    s.appendChild(num);
+    s.appendChild(lbl);
+    box.appendChild(s);
+  });
+}
+function renderAdminAll(){
+  renderAdminStats();
+  renderQrSetting();
+  renderAdminNotices();
+  renderAdminTickets();
+  loadAdminSessions(true);
+  applySiteStatus();
+}
+/* SECTION: init */
+loadCaches();
+loadSupportSession();
+renderUserNotices();
+renderList();
+applyAdminState();
+apiLoadAll().then(function(){
+  setCloudTag(true);
+  renderUserNotices();
+  renderList();
+  applySiteStatus();
+  if($('viewAdmin').classList.contains('active')){ renderAdminAll(); }
+  if($('viewSupport').classList.contains('active')){ enterSupportView(); }
+}).catch(function(){
+  setCloudTag(false, '云端连接失败');
+  applySiteStatus();
+});
+</script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
