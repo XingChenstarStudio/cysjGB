@@ -12,7 +12,7 @@
 :root{
   --bg:#12141f; --panel:#1c1f2e; --panel2:#232739; --line:#323750;
   --gold:#f5b93c; --gold2:#ffe08a; --text:#eceef6; --sub:#9aa0b8;
-  --ok:#3ddc84; --warn:#f5b93c; --info:#5aa2ff; --bad:#ff6b6b;
+  --ok:#3ddc84; --warn:#f5b93c; --info:#5aa2ff; --bad:#ff6b6b; --purple:#b58cff;
   --radius:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -90,6 +90,12 @@ input,select,textarea{font-family:inherit;font-size:16px}
 .field .err-msg{color:var(--bad);font-size:12px;display:none}
 .field.invalid input,.field.invalid select{border-color:var(--bad)}
 .field.invalid .err-msg{display:block}
+/* SECTION: coupon */
+.coupon-msg{font-size:12px;display:none}
+.coupon-msg.show{display:block}
+.coupon-msg.ok{color:var(--ok)}
+.coupon-msg.bad{color:var(--bad)}
+.summary .disc{color:var(--ok);font-size:12px;margin-left:6px}
 /* SECTION: notice */
 .notice-card{
   background:rgba(90,162,255,.08);border:1px solid rgba(90,162,255,.35);
@@ -215,6 +221,15 @@ input,select,textarea{font-family:inherit;font-size:16px}
 .pay-modal .qr-note{color:var(--sub);font-size:12px;margin-bottom:14px}
 .pay-modal .btn-primary{margin-top:4px}
 .pay-modal .btn-ghost{width:100%;margin-top:10px}
+/* SECTION: proof-lightbox */
+.lightbox{
+  width:100%;max-width:520px;margin:auto;background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;padding:18px;animation:fade .2s ease;
+}
+.lightbox h3{font-size:16px;margin-bottom:12px;text-align:center}
+.proof-thumb{
+  display:block;max-width:100%;max-height:64vh;margin:0 auto;border-radius:10px;background:#fff;
+}
 /* SECTION: login-modal */
 .login-modal{
   width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);
@@ -268,6 +283,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
   font-size:12px;padding:4px 12px;border-radius:999px;font-weight:600;white-space:nowrap;
 }
 .badge.pending{background:rgba(245,185,60,.15);color:var(--warn);border:1px solid rgba(245,185,60,.4)}
+.badge.awaiting_check{background:rgba(181,140,255,.15);color:var(--purple);border:1px solid rgba(181,140,255,.45)}
 .badge.processing{background:rgba(90,162,255,.15);color:var(--info);border:1px solid rgba(90,162,255,.4)}
 .badge.done{background:rgba(61,220,132,.15);color:var(--ok);border:1px solid rgba(61,220,132,.4)}
 .badge.cancelled{background:rgba(255,107,107,.12);color:var(--bad);border:1px solid rgba(255,107,107,.4)}
@@ -333,7 +349,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
 }
 #adminChatPanel{margin-top:14px;border-top:1px dashed var(--line);padding-top:14px}
 /* SECTION: admin */
-.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}
 .stat{
   background:var(--panel);border:1px solid var(--line);border-radius:12px;
   padding:14px;text-align:center;
@@ -354,6 +370,11 @@ input,select,textarea{font-family:inherit;font-size:16px}
 .notice-admin-item .n-content{color:var(--sub);font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word}
 .notice-admin-item .n-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
 .notice-admin-item .n-time{color:var(--sub);font-size:11px}
+.coupon-code-tag{
+  font-family:Consolas,monospace;font-weight:700;color:var(--gold2);
+  background:rgba(245,185,60,.1);border:1px dashed rgba(245,185,60,.5);
+  border-radius:6px;padding:1px 8px;font-size:13px;
+}
 .empty{
   text-align:center;padding:40px 16px;color:var(--sub);
 }
@@ -448,8 +469,9 @@ input,select,textarea{font-family:inherit;font-size:16px}
           <span class="err-msg">请填写有效的联系方式</span>
         </div>
         <div class="field">
-          <label for="coupon">优惠码（暂未完工）</label>
-          <input id="coupon" type="text" placeholder="如 XQ777" maxlength="20" disabled>
+          <label for="coupon">优惠码（选填）</label>
+          <input id="coupon" type="text" placeholder="如 XQ777，自动校验" maxlength="20">
+          <span class="coupon-msg" id="couponMsg"></span>
         </div>
         <div class="field full">
           <label for="remark">备注（选填）</label>
@@ -472,7 +494,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
       <h3>订购工单提交成功！</h3>
       <p class="sub">您的工单号为</p>
       <div class="ticket-no" id="newTicketNo">--</div>
-      <p class="sub">请牢记工单号，可在「查询工单」页跟踪处理进度<br>客服将尽快与您联系确认支付与发货</p>
+      <p class="sub" id="successHint">请牢记工单号，可在「查询工单」页跟踪处理进度<br>客服将尽快与您联系确认支付与发货</p>
       <div class="success-actions">
         <button class="btn-ghost" id="btnCopyNo" type="button">复制工单号</button>
         <button class="btn-ghost" id="btnGoQuery" type="button">去查询进度</button>
@@ -493,8 +515,9 @@ input,select,textarea{font-family:inherit;font-size:16px}
       <div class="status-filter" id="statusFilter">
         <button class="chip active" type="button" data-status="all">全部</button>
         <button class="chip" type="button" data-status="pending">待处理</button>
+        <button class="chip" type="button" data-status="awaiting_check">待核对</button>
         <button class="chip" type="button" data-status="processing">处理中</button>
-        <button class="chip" type="button" data-status="done">已完成</button>
+        <button class="chip" type="button" data-status="done">已到账</button>
         <button class="chip" type="button" data-status="cancelled">已取消</button>
       </div>
     </div>
@@ -593,6 +616,37 @@ input,select,textarea{font-family:inherit;font-size:16px}
       </div>
     </div>
     <div class="card">
+      <h2>优惠码管理</h2>
+      <p class="tip">创建的优惠码用户下单时可直接使用：立减按金额减免，折扣按百分比减免；次数留空为不限量</p>
+      <div class="grid">
+        <div class="field">
+          <label for="cpCode">优惠码<span class="req">*</span></label>
+          <input id="cpCode" type="text" placeholder="如 XQ777" maxlength="20">
+        </div>
+        <div class="field">
+          <label for="cpType">优惠类型<span class="req">*</span></label>
+          <select id="cpType">
+            <option value="fixed">立减（元）</option>
+            <option value="percent">折扣（%）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="cpValue">优惠数值<span class="req">*</span></label>
+          <input id="cpValue" type="number" min="0.01" step="0.01" placeholder="立减填金额，折扣填如 10 表示 9 折">
+        </div>
+        <div class="field">
+          <label for="cpUses">可用次数（留空不限量）</label>
+          <input id="cpUses" type="number" min="1" step="1" placeholder="如 50">
+        </div>
+        <div class="field full">
+          <label for="cpExpire">过期时间（选填）</label>
+          <input id="cpExpire" type="datetime-local">
+        </div>
+      </div>
+      <button class="btn-primary" id="btnAddCoupon" type="button" data-primary-action style="margin-top:12px">➕ 创建优惠码</button>
+      <div id="adminCouponList"></div>
+    </div>
+    <div class="card">
       <h2>公告管理</h2>
       <p class="tip">发布的公告会展示在用户端「订购工单」页面顶部，最多展示最近 5 条</p>
       <div class="field">
@@ -608,7 +662,7 @@ input,select,textarea{font-family:inherit;font-size:16px}
     </div>
     <div class="card">
       <h2>工单处理</h2>
-      <p class="tip">点击状态按钮流转工单：待处理 → 处理中 → 已完成；也可取消、恢复或删除工单</p>
+      <p class="tip">用户上传支付凭证后工单进入「待核对」：查看凭证、确认收款后流转；标记完成后用户端显示「已到账」和到账时间</p>
       <div class="query-bar" style="margin-bottom:6px">
         <input id="adminQueryInput" type="text" placeholder="搜索工单号 / 联系方式 / 创游名称 / 创游id">
         <button class="btn-ghost" id="btnAdminRefresh" type="button">↻ 刷新</button>
@@ -616,8 +670,9 @@ input,select,textarea{font-family:inherit;font-size:16px}
       <div class="status-filter" id="adminStatusFilter">
         <button class="chip active" type="button" data-status="all">全部</button>
         <button class="chip" type="button" data-status="pending">待处理</button>
+        <button class="chip" type="button" data-status="awaiting_check">待核对</button>
         <button class="chip" type="button" data-status="processing">处理中</button>
-        <button class="chip" type="button" data-status="done">已完成</button>
+        <button class="chip" type="button" data-status="done">已到账</button>
         <button class="chip" type="button" data-status="cancelled">已取消</button>
       </div>
       <div id="adminTicketList"></div>
@@ -637,9 +692,19 @@ input,select,textarea{font-family:inherit;font-size:16px}
       <img id="payQrImg" src="" alt="微信收款码">
       <div class="qr-fallback" id="payQrFallback">收款码加载失败<br>请检查网络后重新提交<br>或联系客服获取收款码</div>
     </div>
-    <p class="qr-note">长按或截图保存收款码，打开微信扫一扫完成支付</p>
-    <button class="btn-primary" id="btnPayConfirm" type="button" data-primary-action>确定支付</button>
+    <p class="qr-note">支付完成后请上传支付截图，系统会加快核对到账</p>
+    <button class="btn-primary" id="btnUploadProof" type="button" data-primary-action>💳 我已支付，上传支付凭证</button>
+    <input type="file" id="proofFileInput" accept="image/*" style="display:none">
+    <button class="btn-ghost" id="btnPayConfirm" type="button">未上传凭证，直接提交工单</button>
     <button class="btn-ghost" id="btnPayCancel" type="button">暂不支付，返回修改</button>
+  </div>
+</div>
+<!-- SECTION: proof-modal-html -->
+<div class="modal-mask" id="proofModal" role="dialog" aria-modal="true" aria-labelledby="proofTitle">
+  <div class="lightbox">
+    <h3 id="proofTitle">支付凭证</h3>
+    <img id="proofImg" class="proof-thumb" src="" alt="支付凭证截图">
+    <button class="btn-ghost" id="btnProofClose" type="button" style="width:100%;margin-top:12px">关闭</button>
   </div>
 </div>
 <!-- SECTION: login-modal-html -->
@@ -682,15 +747,17 @@ var SUP_SEEN_ADMIN_KEY = 'xq7_support_seen_admin_v8';
 var CACHE_TICKETS = 'xq7_cache_tickets_v7';
 var CACHE_NOTICES = 'xq7_cache_notices_v7';
 var CACHE_SITE = 'xq7_cache_site_v7';
+var CACHE_COUPONS = 'xq7_cache_coupons_v10';
 var LOCAL_SUPPORT_KEY = 'xq7_local_support_v8';
 var UNIT_PRICE = 1.3;   /* 每万币单价（元） */
 var COIN_STEP = 10000;  /* 购买步进：1万币 */
 var USER_POLL_MS = 4000;
 var ADMIN_POLL_MS = 5000;
-var STATUS_TEXT = {pending:'待处理', processing:'处理中', done:'已完成', cancelled:'已取消'};
+var STATUS_TEXT = {pending:'待处理', awaiting_check:'待核对', processing:'处理中', done:'已到账', cancelled:'已取消'};
 /* SECTION: state */
 var tickets = [];
 var notices = [];
+var coupons = [];
 var siteConfig = {is_closed:false, close_reason:'', pay_qr_url:''};
 var cloudOK = false;
 var supportSession = null;   /* 用户端当前会话 {id,nickname,contact,status} */
@@ -728,10 +795,10 @@ function sbFetch(path, opts){
     });
   });
 }
-function sbUploadFile(file){
-  /* 上传到 Supabase Storage，返回公开 URL */
+function sbUploadFile(file, prefix){
+  /* 上传到 Supabase Storage assets 桶，返回公开 URL */
   var ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
-  var fname = 'qr_' + Date.now() + '_' + Math.floor(Math.random()*1000) + '.' + ext;
+  var fname = (prefix || 'file') + '_' + Date.now() + '_' + Math.floor(Math.random()*1000) + '.' + ext;
   return fetch(SUPABASE_URL + '/storage/v1/object/' + STORAGE_BUCKET + '/' + fname, {
     method: 'POST',
     headers: {
@@ -763,6 +830,8 @@ function normalizeTicket(r){
     coupon: r.coupon || '',
     remark: r.remark || '',
     status: r.status,
+    proof_url: r.proof_url || '',
+    delivered_at: r.delivered_at || null,
     created_at: r.created_at,
     updated_at: r.updated_at
   };
@@ -779,6 +848,11 @@ function apiLoadAll(){
     if(!siteConfig.pay_qr_url){ siteConfig.pay_qr_url = ''; }
     cloudOK = true;
     saveCaches();
+    /* 优惠码表可能尚未创建，加载失败不阻塞其他数据 */
+    return sbFetch('coupons?select=*&order=created_at.desc&limit=200').then(function(c){
+      coupons = c || [];
+      saveCaches();
+    }).catch(function(){ coupons = []; });
   });
 }
 function saveCaches(){
@@ -786,6 +860,7 @@ function saveCaches(){
     localStorage.setItem(CACHE_TICKETS, JSON.stringify(tickets));
     localStorage.setItem(CACHE_NOTICES, JSON.stringify(notices));
     localStorage.setItem(CACHE_SITE, JSON.stringify(siteConfig));
+    localStorage.setItem(CACHE_COUPONS, JSON.stringify(coupons));
   }catch(e){ /* ignore */ }
 }
 function loadCaches(){
@@ -793,9 +868,11 @@ function loadCaches(){
     var t = localStorage.getItem(CACHE_TICKETS);
     var n = localStorage.getItem(CACHE_NOTICES);
     var s = localStorage.getItem(CACHE_SITE);
+    var c = localStorage.getItem(CACHE_COUPONS);
     if(t){ tickets = JSON.parse(t); }
     if(n){ notices = JSON.parse(n); }
     if(s){ siteConfig = JSON.parse(s); }
+    if(c){ coupons = JSON.parse(c); }
   }catch(e){ /* ignore */ }
 }
 function setCloudTag(ok, msg){
@@ -870,21 +947,85 @@ $('tabOrder').addEventListener('click', function(){ switchTab('order'); });
 $('tabQuery').addEventListener('click', function(){ switchTab('query'); });
 $('tabSupport').addEventListener('click', function(){ switchTab('support'); });
 $('tabAdmin').addEventListener('click', function(){ switchTab('admin'); });
+/* SECTION: coupons-user */
+function findCoupon(code){
+  var c = String(code || '').trim().toUpperCase();
+  if(!c){ return null; }
+  for(var i=0;i<coupons.length;i++){
+    if(String(coupons[i].code).toUpperCase() === c){ return coupons[i]; }
+  }
+  return null;
+}
+function checkCoupon(cp){
+  if(!cp){ return {ok:false, msg:'优惠码不存在'}; }
+  if(cp.enabled === false){ return {ok:false, msg:'优惠码已停用'}; }
+  if(cp.expires_at && new Date(cp.expires_at).getTime() < Date.now()){ return {ok:false, msg:'优惠码已过期'}; }
+  if(cp.uses_left !== null && cp.uses_left !== undefined && Number(cp.uses_left) <= 0){ return {ok:false, msg:'优惠码已被用完'}; }
+  return {ok:true, msg:''};
+}
+function discountOf(cp, amount){
+  var v = Number(cp.discount_value);
+  var d = cp.discount_type === 'percent' ? amount * v / 100 : v;
+  d = Math.round(Math.min(d, amount) * 100) / 100;
+  return d > 0 ? d : 0;
+}
+function couponDesc(cp){
+  return cp.discount_type === 'percent'
+    ? ('立减 ' + Number(cp.discount_value) + '%')
+    : ('立减 ¥' + Number(cp.discount_value).toFixed(2));
+}
+function showCouponMsg(text, ok){
+  var el = $('couponMsg');
+  if(!text){ el.className = 'coupon-msg'; el.textContent = ''; return; }
+  el.className = 'coupon-msg show ' + (ok ? 'ok' : 'bad');
+  el.textContent = text;
+}
+function consumeCoupon(cp){
+  if(!cp || cp.uses_left === null || cp.uses_left === undefined){ return; }
+  var nv = Math.max(0, Number(cp.uses_left) - 1);
+  if(cloudOK){
+    sbFetch('coupons?id=eq.' + encodeURIComponent(cp.id), {
+      method:'PATCH', body: JSON.stringify({uses_left: nv})
+    }).then(function(){ cp.uses_left = nv; }).catch(function(){ /* ignore */ });
+  }else{
+    cp.uses_left = nv;
+  }
+}
 /* SECTION: unit-price & presets */
 function currentCoins(){
   var v = parseInt($('coins').value, 10);
   return isNaN(v) || v < 1 ? 0 : v;
 }
+function currentDiscount(baseAmount){
+  var code = $('coupon').value.trim();
+  if(!code){ showCouponMsg('', true); return 0; }
+  var cp = findCoupon(code);
+  var chk = checkCoupon(cp);
+  if(!chk.ok){ showCouponMsg(chk.msg, false); return 0; }
+  var d = discountOf(cp, baseAmount);
+  showCouponMsg('✓ ' + cp.code + ' 已生效：' + couponDesc(cp) + '，本单减免 ' + fmtMoney(d), true);
+  return d;
+}
+function finalAmount(){
+  var base = calcAmount(currentCoins());
+  var d = currentDiscount(base);
+  return Math.round((base - d) * 100) / 100;
+}
 function updateTotal(){
   var coins = currentCoins();
-  $('calcText').textContent = '¥1.3 / 万币 × ' + (coins > 0 ? fmtWan(coins) : '0 万币');
-  $('totalPrice').textContent = fmtMoney(coins > 0 ? calcAmount(coins) : 0);
+  var base = calcAmount(coins);
+  var disc = coins > 0 ? currentDiscount(base) : ($('coupon').value.trim() ? currentDiscount(base) : 0);
+  var txt = '¥1.3 / 万币 × ' + (coins > 0 ? fmtWan(coins) : '0 万币');
+  if(disc > 0){ txt += ' − 优惠 ' + fmtMoney(disc); }
+  $('calcText').textContent = txt;
+  $('totalPrice').textContent = fmtMoney(Math.max(0, base - disc));
   var chips = $('qtyPresets').querySelectorAll('.qty-chip');
   for(var i=0;i<chips.length;i++){
     chips[i].classList.toggle('active', coins > 0 && Number(chips[i].dataset.coins) === coins);
   }
 }
 $('coins').addEventListener('input', updateTotal);
+$('coupon').addEventListener('input', updateTotal);
 var presetChips = $('qtyPresets').querySelectorAll('.qty-chip');
 for(var pi=0; pi<presetChips.length; pi++){
   presetChips[pi].addEventListener('click', function(){
@@ -918,14 +1059,24 @@ $('orderForm').addEventListener('submit', function(e){
     showToast('请检查表单中标红的必填项', 'bad');
     return;
   }
+  var base = calcAmount(coins);
+  var couponCode = $('coupon').value.trim();
+  var cp = findCoupon(couponCode);
+  var chk = couponCode ? checkCoupon(cp) : {ok:true, msg:''};
+  if(couponCode && !chk.ok){
+    showToast('优惠码无效：' + chk.msg, 'bad');
+    return;
+  }
+  var disc = (couponCode && chk.ok) ? discountOf(cp, base) : 0;
   pendingOrder = {
     coins: coins,
-    amount: calcAmount(coins),
+    amount: Math.round((base - disc) * 100) / 100,
     game_name: $('gameName').value.trim(),
     game_id: $('gameId').value.trim(),
     contact: contact,
-    coupon: '',
-    remark: $('remark').value.trim()
+    coupon: (couponCode && chk.ok) ? cp.code : '',
+    remark: $('remark').value.trim(),
+    _cp: (couponCode && chk.ok) ? cp : null
   };
   $('payAmount').textContent = fmtMoney(pendingOrder.amount);
   openPayModal();
@@ -935,9 +1086,9 @@ function currentPayQrUrl(){
   return (siteConfig && siteConfig.pay_qr_url) ? siteConfig.pay_qr_url : PAY_QR_DEFAULT;
 }
 function openPayModal(){
-  /* 打开支付弹窗时，用当前有效的收款码地址 */
+  /* 打开支付弹窗时，用当前有效的收款码地址（加时间戳防缓存） */
   var url = currentPayQrUrl();
-  $('payQrImg').src = url;
+  $('payQrImg').src = url + (url.indexOf('?') === -1 ? '?' : '&') + 't=' + Date.now();
   $('payQrImg').style.display = '';
   $('payQrFallback').classList.remove('show');
   $('payModal').classList.add('show');
@@ -962,14 +1113,10 @@ $('payModal').addEventListener('click', function(e){
     closePayModal();
   }
 });
-$('btnPayConfirm').addEventListener('click', function(){
-  if(!pendingOrder){ closePayModal(); return; }
-  var btn = $('btnPayConfirm');
-  btn.disabled = true;
-  btn.textContent = '正在提交…';
+function buildTicketRow(no, status){
   var now = nowIso();
-  var row = {
-    ticket_no: genTicketNo(),
+  return {
+    ticket_no: no,
     coins: pendingOrder.coins,
     amount: pendingOrder.amount,
     game_name: pendingOrder.game_name,
@@ -977,37 +1124,99 @@ $('btnPayConfirm').addEventListener('click', function(){
     contact: pendingOrder.contact,
     coupon: pendingOrder.coupon,
     remark: pendingOrder.remark,
-    status: 'pending',
+    status: status,
+    proof_url: '',
     created_at: now,
     updated_at: now
   };
+}
+function postTicket(row){
+  var cp = pendingOrder ? pendingOrder._cp : null;
   var task = cloudOK
     ? sbFetch('tickets', {method:'POST', headers:{'Prefer':'return=representation'}, body: JSON.stringify(row)})
     : Promise.reject(new Error('offline'));
   task.then(function(){
     tickets.unshift(row);
+    consumeCoupon(cp);
     saveCaches();
-    afterOrderSuccess(row.ticket_no);
+    afterOrderSuccess(row.ticket_no, row.status);
   }).catch(function(err){
     cloudOK = false;
     setCloudTag(false, '写入失败');
     tickets.unshift(row);
+    consumeCoupon(cp);
     saveCaches();
-    afterOrderSuccess(row.ticket_no);
+    afterOrderSuccess(row.ticket_no, row.status);
     showToast('云端写入失败，工单已暂存本机：' + err.message, 'bad');
   }).then(function(){
     pendingOrder = null;
+  });
+}
+$('btnPayConfirm').addEventListener('click', function(){
+  if(!pendingOrder){ closePayModal(); return; }
+  postTicket(buildTicketRow(genTicketNo(), 'pending'));
+});
+$('btnUploadProof').addEventListener('click', function(){
+  if(!pendingOrder){ closePayModal(); return; }
+  $('proofFileInput').click();
+});
+$('proofFileInput').addEventListener('change', function(){
+  var file = this.files[0];
+  this.value = '';
+  if(!file){ return; }
+  if(!pendingOrder){ return; }
+  if(file.size > 8*1024*1024){
+    showToast('图片过大（限 8MB 以内），请压缩后重试', 'bad');
+    return;
+  }
+  var btn = $('btnUploadProof');
+  btn.disabled = true;
+  btn.textContent = '正在上传凭证…';
+  var no = genTicketNo();
+  var row = buildTicketRow(no, 'awaiting_check');
+  if(!cloudOK){
+    /* 本地模式无法上传文件，降级为普通待处理工单 */
     btn.disabled = false;
-    btn.textContent = '确定支付';
+    btn.textContent = '💳 我已支付，上传支付凭证';
+    row.status = 'pending';
+    postTicket(row);
+    showToast('本地模式下无法上传凭证，工单已按待处理提交', 'bad');
+    return;
+  }
+  sbUploadFile(file, 'proof').then(function(url){
+    row.proof_url = url;
+    postTicket(row);
+  }).catch(function(err){
+    showToast('凭证上传失败：' + err.message, 'bad');
+  }).then(function(){
+    btn.disabled = false;
+    btn.textContent = '💳 我已支付，上传支付凭证';
   });
 });
-function afterOrderSuccess(no){
+function afterOrderSuccess(no, status){
   closePayModal();
   $('orderForm').style.display = 'none';
   $('newTicketNo').textContent = no;
+  var hint = $('successHint');
+  if(status === 'awaiting_check'){
+    hint.textContent = '支付凭证已提交，工单进入「待核对」状态，客服核对到账后会尽快发货';
+  }else{
+    hint.textContent = '请牢记工单号，可在「查询工单」页跟踪处理进度；上传支付凭证可加快核对';
+  }
   $('successBox').classList.add('show');
   window.scrollTo({top:0, behavior:'smooth'});
 }
+/* SECTION: proof-lightbox */
+function openProofModal(url){
+  $('proofImg').src = url + (url.indexOf('?') === -1 ? '?' : '&') + 't=' + Date.now();
+  $('proofModal').classList.add('show');
+}
+$('btnProofClose').addEventListener('click', function(){
+  $('proofModal').classList.remove('show');
+});
+$('proofModal').addEventListener('click', function(e){
+  if(e.target === $('proofModal')){ $('proofModal').classList.remove('show'); }
+});
 /* SECTION: order-success-actions */
 $('btnCopyNo').addEventListener('click', function(){
   var no = $('newTicketNo').textContent;
@@ -1035,6 +1244,7 @@ function resetForm(){
   $('successBox').classList.remove('show');
   $('orderForm').style.display = 'block';
   $('orderForm').reset();
+  showCouponMsg('', true);
   updateTotal();
   var invalids = document.querySelectorAll('.field.invalid');
   for(var i=0;i<invalids.length;i++){ invalids[i].classList.remove('invalid'); }
@@ -1089,6 +1299,7 @@ function buildTicketInfoBody(t){
     ['联系方式', t.contact]
   ];
   if(t.coupon){ kvs.push(['优惠码', t.coupon]); }
+  if(t.status === 'done' && t.delivered_at){ kvs.push(['到账时间', fmtTime(t.delivered_at)]); }
   if(t.remark){ kvs.push(['备注', t.remark]); }
   kvs.forEach(function(pair){
     var kv = document.createElement('div');
@@ -1109,7 +1320,7 @@ function buildTicketHead(t){
   noEl.textContent = t.ticket_no;
   var badge = document.createElement('span');
   badge.className = 'badge ' + t.status;
-  badge.textContent = STATUS_TEXT[t.status] || t.status;
+  badge.textContent = (t.status === 'done' ? '✅ ' : '') + (STATUS_TEXT[t.status] || t.status);
   head.appendChild(noEl);
   head.appendChild(badge);
   return head;
@@ -1126,7 +1337,7 @@ function buildTicketCard(t){
   time.textContent = '提交于 ' + fmtTime(t.created_at) + ' · 更新于 ' + fmtTime(t.updated_at);
   foot.appendChild(time);
   var actions = document.createElement('span');
-  if(t.status === 'pending' || t.status === 'processing'){
+  if(t.status === 'pending' || t.status === 'processing' || t.status === 'awaiting_check'){
     var cancelBtn = document.createElement('button');
     cancelBtn.className = 'link-btn danger';
     cancelBtn.type = 'button';
@@ -1180,11 +1391,14 @@ function renderList(){
 /* SECTION: ticket-actions */
 function syncTicketStatus(no, status, msg){
   var now = nowIso();
+  var patch = {status: status, updated_at: now};
+  if(status === 'done'){ patch.delivered_at = now; }
   var done = function(){
     for(var i=0;i<tickets.length;i++){
       if(tickets[i].ticket_no === no){
         tickets[i].status = status;
         tickets[i].updated_at = now;
+        if(status === 'done'){ tickets[i].delivered_at = now; }
         break;
       }
     }
@@ -1196,7 +1410,7 @@ function syncTicketStatus(no, status, msg){
   if(cloudOK){
     sbFetch('tickets?ticket_no=eq.' + encodeURIComponent(no), {
       method:'PATCH',
-      body: JSON.stringify({status: status, updated_at: now})
+      body: JSON.stringify(patch)
     }).then(done).catch(function(err){
       done();
       showToast('云端同步失败，已更新本机：' + err.message, 'bad');
@@ -1450,7 +1664,7 @@ function loadAdminSessions(silent){
       adminSessions = res[0] || [];
       var msgs = res[1] || [];
       renderAdminSessions(msgs);
-      if(adminActiveId !== null){ renderAdminStats(); }
+      renderAdminStats();
     }).catch(function(){ if(!silent){ showToast('会话列表加载失败', 'bad'); } });
   }
   adminSessions = localSupport.sessions.slice().sort(function(a,b){
@@ -1709,7 +1923,7 @@ function applySiteStatus(){
   var closed = siteConfig.is_closed === true;
   var reason = siteConfig.close_reason || '';
   $('closedOverlay').classList.toggle('show', closed && !isAdmin());
-  if(!($('loginModal').classList.contains('show') || $('payModal').classList.contains('show'))){
+  if(!($('loginModal').classList.contains('show') || $('payModal').classList.contains('show') || $('proofModal').classList.contains('show'))){
     document.body.style.overflow = (closed && !isAdmin()) ? 'hidden' : '';
   }
   $('siteDot').className = 'dot ' + (closed ? 'closed' : 'open');
@@ -1729,9 +1943,21 @@ function syncSiteConfig(patch, okMsg){
     showToast(okMsg, 'ok');
   };
   if(cloudOK){
+    var body = JSON.stringify(Object.assign({updated_at: nowIso()}, patch));
     sbFetch('site_config?id=eq.1', {
       method:'PATCH',
-      body: JSON.stringify(Object.assign({updated_at: nowIso()}, patch))
+      headers:{'Prefer':'return=representation'},
+      body: body
+    }).then(function(res){
+      /* site_config 种子行缺失时 PATCH 更新 0 行，自动补插一行 */
+      if(Array.isArray(res) && res.length === 0){
+        return sbFetch('site_config', {
+          method:'POST',
+          headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},
+          body: JSON.stringify(Object.assign({id:1, updated_at: nowIso()}, patch))
+        });
+      }
+      return res;
     }).then(apply).catch(function(err){
       apply();
       showToast('云端同步失败，已更新本机：' + err.message, 'bad');
@@ -1769,7 +1995,7 @@ $('btnUploadQr').addEventListener('click', function(){
   var btn = $('btnUploadQr');
   btn.disabled = true;
   btn.textContent = '上传中…';
-  sbUploadFile(file).then(function(url){
+  sbUploadFile(file, 'qr').then(function(url){
     btn.disabled = false;
     btn.textContent = '上传';
     savePayQr(url);
@@ -1787,6 +2013,130 @@ $('btnSaveQr').addEventListener('click', function(){
   }
   savePayQr(url);
 });
+/* SECTION: admin-coupons */
+$('btnAddCoupon').addEventListener('click', function(){
+  var code = $('cpCode').value.trim().toUpperCase();
+  var type = $('cpType').value;
+  var value = parseFloat($('cpValue').value);
+  var usesRaw = $('cpUses').value.trim();
+  var uses = usesRaw === '' ? null : parseInt(usesRaw, 10);
+  var expireRaw = $('cpExpire').value;
+  if(!code){ showToast('请填写优惠码', 'bad'); return; }
+  if(isNaN(value) || value <= 0){ showToast('请填写正确的优惠数值', 'bad'); return; }
+  if(type === 'percent' && value >= 100){ showToast('折扣百分比需小于 100', 'bad'); return; }
+  if(usesRaw !== '' && (isNaN(uses) || uses < 1)){ showToast('可用次数需为正整数或留空', 'bad'); return; }
+  if(findCoupon(code)){ showToast('优惠码 ' + code + ' 已存在', 'bad'); return; }
+  var row = {
+    code: code,
+    discount_type: type,
+    discount_value: value,
+    uses_left: uses,
+    expires_at: expireRaw ? new Date(expireRaw).toISOString() : null,
+    enabled: true,
+    created_at: nowIso()
+  };
+  var done = function(saved){
+    coupons.unshift(saved);
+    saveCaches();
+    $('cpCode').value = '';
+    $('cpValue').value = '';
+    $('cpUses').value = '';
+    $('cpExpire').value = '';
+    renderAdminCoupons();
+    showToast('优惠码 ' + saved.code + ' 已创建', 'ok');
+  };
+  if(cloudOK){
+    sbFetch('coupons', {method:'POST', headers:{'Prefer':'return=representation'}, body: JSON.stringify(row)})
+      .then(function(res){ done(res && res[0] ? res[0] : row); })
+      .catch(function(err){ showToast('创建失败（coupons 表可能未建）：' + err.message, 'bad'); });
+  }else{
+    row.id = Date.now();
+    done(row);
+  }
+});
+function toggleCoupon(c){
+  var nv = !(c.enabled !== false);
+  var done = function(){
+    c.enabled = nv;
+    saveCaches();
+    renderAdminCoupons();
+    showToast(nv ? '优惠码已启用' : '优惠码已停用', 'ok');
+  };
+  if(cloudOK && c.id !== undefined){
+    sbFetch('coupons?id=eq.' + encodeURIComponent(c.id), {method:'PATCH', body: JSON.stringify({enabled: nv})})
+      .then(done).catch(function(err){ done(); showToast('云端同步失败：' + err.message, 'bad'); });
+  }else{
+    done();
+  }
+}
+function deleteCoupon(c){
+  if(!window.confirm('确定删除优惠码 ' + c.code + ' 吗？')){ return; }
+  var done = function(){
+    coupons = coupons.filter(function(x){ return x !== c; });
+    saveCaches();
+    renderAdminCoupons();
+    showToast('优惠码已删除', 'ok');
+  };
+  if(cloudOK && c.id !== undefined){
+    sbFetch('coupons?id=eq.' + encodeURIComponent(c.id), {method:'DELETE'})
+      .then(done).catch(function(err){ done(); showToast('云端同步失败：' + err.message, 'bad'); });
+  }else{
+    done();
+  }
+}
+function renderAdminCoupons(){
+  var box = $('adminCouponList');
+  box.innerHTML = '';
+  if(coupons.length === 0){
+    renderEmpty(box, '暂无优惠码，创建后用户下单即可使用');
+    return;
+  }
+  coupons.forEach(function(c){
+    var item = document.createElement('div');
+    item.className = 'notice-admin-item';
+    var title = document.createElement('div');
+    title.className = 'n-title';
+    var tag = document.createElement('span');
+    tag.className = 'coupon-code-tag';
+    tag.textContent = c.code;
+    title.appendChild(tag);
+    title.appendChild(document.createTextNode('  ' + couponDesc(c)));
+    var st = document.createElement('span');
+    st.className = 'badge ' + (c.enabled === false ? 'closed' : 'open');
+    st.style.marginLeft = '8px';
+    st.textContent = c.enabled === false ? '已停用' : '启用中';
+    title.appendChild(st);
+    var info = document.createElement('div');
+    info.className = 'n-content';
+    var uses = (c.uses_left === null || c.uses_left === undefined) ? '不限量' : ('剩余 ' + c.uses_left + ' 次');
+    var exp = c.expires_at ? ('，' + fmtTime(c.expires_at) + ' 过期') : '，长期有效';
+    info.textContent = uses + exp;
+    var foot = document.createElement('div');
+    foot.className = 'n-foot';
+    var time = document.createElement('span');
+    time.className = 'n-time';
+    time.textContent = '创建于 ' + fmtTime(c.created_at);
+    var acts = document.createElement('span');
+    var tg = document.createElement('button');
+    tg.className = 'link-btn';
+    tg.type = 'button';
+    tg.textContent = c.enabled === false ? '启用' : '停用';
+    tg.addEventListener('click', function(){ toggleCoupon(c); });
+    var del = document.createElement('button');
+    del.className = 'link-btn danger';
+    del.type = 'button';
+    del.textContent = '删除';
+    del.addEventListener('click', function(){ deleteCoupon(c); });
+    acts.appendChild(tg);
+    acts.appendChild(del);
+    foot.appendChild(time);
+    foot.appendChild(acts);
+    item.appendChild(title);
+    item.appendChild(info);
+    item.appendChild(foot);
+    box.appendChild(item);
+  });
+}
 /* SECTION: admin-notices */
 $('btnPublishNotice').addEventListener('click', function(){
   var title = $('noticeTitle').value.trim();
@@ -1912,7 +2262,6 @@ $('btnAdminRefresh').addEventListener('click', function(){
     setCloudTag(true);
     renderAdminAll();
     renderUserNotices();
-    renderQrSetting();
     showToast('已从云端刷新数据', 'ok');
   }).catch(function(err){
     showToast('刷新失败：' + err.message, 'bad');
@@ -1957,12 +2306,19 @@ function buildAdminTicketCard(t){
     b.addEventListener('click', fn);
     actions.appendChild(b);
   }
-  if(t.status === 'pending'){
+  if(t.proof_url){
+    addBtn('🧾 查看支付凭证', '', function(){ openProofModal(t.proof_url); });
+  }
+  if(t.status === 'awaiting_check'){
+    addBtn('核对通过，开始处理', '', function(){ syncTicketStatus(t.ticket_no, 'processing', '已确认收款，工单转为处理中'); });
+    addBtn('核对通过，直接完成', '', function(){ syncTicketStatus(t.ticket_no, 'done', '工单已完成，用户端显示已到账'); });
+    addBtn('取消工单', 'danger', function(){ syncTicketStatus(t.ticket_no, 'cancelled', '工单已取消'); });
+  }else if(t.status === 'pending'){
     addBtn('开始处理', '', function(){ syncTicketStatus(t.ticket_no, 'processing', '工单已转为处理中'); });
-    addBtn('直接完成', '', function(){ syncTicketStatus(t.ticket_no, 'done', '工单已完成'); });
+    addBtn('直接完成', '', function(){ syncTicketStatus(t.ticket_no, 'done', '工单已完成，用户端显示已到账'); });
     addBtn('取消工单', 'danger', function(){ syncTicketStatus(t.ticket_no, 'cancelled', '工单已取消'); });
   }else if(t.status === 'processing'){
-    addBtn('标记完成', '', function(){ syncTicketStatus(t.ticket_no, 'done', '工单已完成'); });
+    addBtn('标记完成', '', function(){ syncTicketStatus(t.ticket_no, 'done', '工单已完成，用户端显示已到账'); });
     addBtn('取消工单', 'danger', function(){ syncTicketStatus(t.ticket_no, 'cancelled', '工单已取消'); });
   }else if(t.status === 'cancelled'){
     addBtn('恢复为待处理', '', function(){ syncTicketStatus(t.ticket_no, 'pending', '工单已恢复为待处理'); });
@@ -1988,15 +2344,16 @@ function renderAdminTickets(){
 function renderAdminStats(){
   var box = $('adminStats');
   box.innerHTML = '';
-  var counts = {pending:0, processing:0, done:0, cancelled:0};
+  var counts = {pending:0, awaiting_check:0, processing:0, done:0, cancelled:0};
   tickets.forEach(function(t){
     if(counts[t.status] !== undefined){ counts[t.status]++; }
   });
   var items = [
     [String(tickets.length), '全部工单'],
     [String(counts.pending), '待处理'],
+    [String(counts.awaiting_check), '待核对'],
     [String(counts.processing), '处理中'],
-    [String(counts.done), '已完成'],
+    [String(counts.done), '已到账'],
     [String(adminSessions.length), '客服会话']
   ];
   items.forEach(function(pair){
@@ -2016,6 +2373,7 @@ function renderAdminStats(){
 function renderAdminAll(){
   renderAdminStats();
   renderQrSetting();
+  renderAdminCoupons();
   renderAdminNotices();
   renderAdminTickets();
   loadAdminSessions(true);
